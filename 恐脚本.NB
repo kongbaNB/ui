@@ -724,8 +724,8 @@ function UILibrary:CreateWindow(config)
     end
     
     task.defer(function()
-        if self.Categories[1] then
-            self.Categories[1]:MouseButton1Click()
+        if window.Categories[1] then
+            window.Categories[1]:MouseButton1Click()
         end
     end)
     
