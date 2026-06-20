@@ -1894,7 +1894,6 @@ function UILibrary:CreateWindow(config)
     local function getToggleCenter()
         local absPos = ToggleBtn.AbsolutePosition
         local absSize = ToggleBtn.AbsoluteSize
-        local viewport = workspace.CurrentCamera.ViewportSize
         return UDim2.new(0, absPos.X + absSize.X / 2, 0, absPos.Y + absSize.Y / 2)
     end
     local function animateMainOpen()
@@ -1924,6 +1923,17 @@ function UILibrary:CreateWindow(config)
         end)
     end
     ToggleBtn.MouseButton1Click:Connect(function()
+        local originalSize = ToggleBtn.Size
+        local tweenDown = TweenService:Create(ToggleBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset * 0.88, originalSize.Y.Scale, originalSize.Y.Offset * 0.88)
+        })
+        tweenDown:Play()
+        tweenDown.Completed:Connect(function()
+            local tweenUp = TweenService:Create(ToggleBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = originalSize
+            })
+            tweenUp:Play()
+        end)
         if Main.Visible then
             animateMainClose()
             ToggleBtn.Text = config.ToggleText or "打开菜单"
@@ -1952,6 +1962,7 @@ function UILibrary:CreateWindow(config)
         end
         return "🥳"
     end
+    local beanPaused = true
     local function SpawnBean()
         if #BeanBack:GetChildren() > 25 then return end
         local label = Instance.new("TextLabel")
@@ -1962,7 +1973,7 @@ function UILibrary:CreateWindow(config)
         label.TextSize = 18
         label.Font = Enum.Font.Unknown
         label.ZIndex = 1
-        local x = math.random(0, Main.AbsoluteSize.X - 22)
+        local x = math.random(0, math.max(Main.AbsoluteSize.X - 22, 50))
         label.Position = UDim2.new(0, x, 0, -22)
         local speed = math.random(30, 50)
         local drift = math.random(-15, 15)
@@ -1970,7 +1981,7 @@ function UILibrary:CreateWindow(config)
         local conn
         conn = RunService.Heartbeat:Connect(function(dt)
             if not label or not label.Parent then conn:Disconnect() return end
-            if not Main.Visible then return end
+            if beanPaused then return end
             alpha += dt
             local newY = alpha * speed - 22
             if newY > Main.AbsoluteSize.Y then conn:Disconnect() label:Destroy() return end
@@ -1980,11 +1991,16 @@ function UILibrary:CreateWindow(config)
     task.spawn(function()
         while task.wait(math.random(150, 300) / 1000) do
             if ScreenGui and ScreenGui.Parent then
-                SpawnBean()
+                if not beanPaused then
+                    SpawnBean()
+                end
             else
                 break
             end
         end
+    end)
+    Main:GetPropertyChangedSignal("Visible"):Connect(function()
+        beanPaused = not Main.Visible
     end)
     local window = {
         ScreenGui = ScreenGui,
