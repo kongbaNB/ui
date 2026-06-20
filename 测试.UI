@@ -1492,8 +1492,8 @@ function Page:CreateSavedServersPanel(config)
     scrollFrame.BackgroundTransparency = 1
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
     scrollFrame.ScrollBarThickness = 4
+    local servers = config.Servers or {}
     local function refreshList()
-        local servers = config.Servers or {}
         for _, child in ipairs(scrollFrame:GetChildren()) do
             if child:IsA("Frame") then
                 child:Destroy()
@@ -1592,10 +1592,15 @@ function Page:CreateSavedServersPanel(config)
                 clCorner.Parent = cancelBtn
                 confirmBtn.MouseButton1Click:Connect(function()
                     if config.OnRename then
-                        if config.OnRename(entry.id, input.Text) then
-                            refreshList()
+                        config.OnRename(entry.id, input.Text)
+                    end
+                    for _, s in ipairs(servers) do
+                        if s.id == entry.id then
+                            s.name = input.Text
+                            break
                         end
                     end
+                    refreshList()
                     renamePanel:Destroy()
                 end)
                 cancelBtn.MouseButton1Click:Connect(function() renamePanel:Destroy() end)
@@ -1615,8 +1620,14 @@ function Page:CreateSavedServersPanel(config)
             delBtn.MouseButton1Click:Connect(function()
                 if config.OnDelete then
                     config.OnDelete(entry.id)
-                    refreshList()
                 end
+                for i = #servers, 1, -1 do
+                    if servers[i].id == entry.id then
+                        table.remove(servers, i)
+                        break
+                    end
+                end
+                refreshList()
             end)
             y = y + 35
         end
@@ -1683,8 +1694,9 @@ function Page:CreateSavedServersPanel(config)
         confirmBtn.MouseButton1Click:Connect(function()
             if config.OnSave then
                 config.OnSave(game.JobId, input.Text)
-                refreshList()
             end
+            table.insert(servers, {id = game.JobId, name = input.Text})
+            refreshList()
             namePanel:Destroy()
         end)
         cancelBtn.MouseButton1Click:Connect(function() namePanel:Destroy() end)
@@ -1772,10 +1784,17 @@ function UILibrary:CreateWindow(config)
     MainStroke.Parent = Main
     local BeanBack = Instance.new("Frame")
     BeanBack.Name = "BeanBackground"
-    BeanBack.Parent = Main
+    BeanBack.Parent = ScreenGui
     BeanBack.BackgroundTransparency = 1
-    BeanBack.Size = UDim2.new(1, 0, 1, 0)
+    BeanBack.Size = Main.Size
+    BeanBack.Position = Main.Position
     BeanBack.ZIndex = 1
+    Main:GetPropertyChangedSignal("Size"):Connect(function()
+        BeanBack.Size = Main.Size
+    end)
+    Main:GetPropertyChangedSignal("Position"):Connect(function()
+        BeanBack.Position = Main.Position
+    end)
     local Line = Instance.new("Frame")
     Line.Parent = Main
     Line.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -1984,7 +2003,7 @@ function UILibrary:CreateWindow(config)
             if beanPaused then return end
             alpha += dt
             local newY = alpha * speed - 22
-            if newY > mainTargetSize.Y.Offset then conn:Disconnect() label:Destroy() return end
+            if newY > Main.AbsoluteSize.Y then conn:Disconnect() label:Destroy() return end
             label.Position = UDim2.new(0, x + math.sin(alpha * 1.2) * drift, 0, newY)
         end)
     end
