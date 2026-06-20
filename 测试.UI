@@ -1492,8 +1492,8 @@ function Page:CreateSavedServersPanel(config)
     scrollFrame.BackgroundTransparency = 1
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
     scrollFrame.ScrollBarThickness = 4
-    local servers = config.Servers or {}
     local function refreshList()
+        local servers = config.Servers or {}
         for _, child in ipairs(scrollFrame:GetChildren()) do
             if child:IsA("Frame") then
                 child:Destroy()
@@ -1984,7 +1984,7 @@ function UILibrary:CreateWindow(config)
             if beanPaused then return end
             alpha += dt
             local newY = alpha * speed - 22
-            if newY > Main.AbsoluteSize.Y then conn:Disconnect() label:Destroy() return end
+            if newY > mainTargetSize.Y.Offset then conn:Disconnect() label:Destroy() return end
             label.Position = UDim2.new(0, x + math.sin(alpha * 1.2) * drift, 0, newY)
         end)
     end
