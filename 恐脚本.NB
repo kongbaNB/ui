@@ -1,0 +1,745 @@
+local UILibrary = {}
+UILibrary.__index = UILibrary
+
+UILibrary.Defaults = {
+    Theme = {
+        MainBg = Color3.fromRGB(20, 20, 20),
+        MainStroke = Color3.fromRGB(255, 0, 0),
+        TopBar = Color3.fromRGB(30, 30, 30),
+        ButtonBg = Color3.fromRGB(0, 0, 0),
+        ButtonText = Color3.new(1, 1, 1),
+        CatBg = Color3.fromRGB(25, 25, 25),
+        CatActive = Color3.fromRGB(70, 70, 70),
+        PanelBg = Color3.fromRGB(0, 0, 0),
+        PanelStroke = Color3.fromRGB(100, 100, 100),
+        SliderTrack = Color3.fromRGB(50, 50, 50),
+        SliderFill = Color3.fromRGB(0, 120, 255),
+        CloseBtn = Color3.fromRGB(200, 50, 50),
+        ConfirmBtn = Color3.fromRGB(0, 180, 0),
+        ResetBtn = Color3.fromRGB(180, 80, 0),
+        CopyBtn = Color3.fromRGB(0, 120, 255),
+    },
+    Font = Enum.Font.SourceSansBold,
+    TextSize = 14,
+    CornerRadius = UDim.new(0, 6),
+    ButtonCorner = UDim.new(0, 6),
+    PanelCorner = UDim.new(0, 12),
+    CloseCorner = UDim.new(0, 4),
+    AnimationSpeed = 0.2,
+}
+
+function UILibrary:GetScreenGui(name)
+    local player = game:GetService("Players").LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui")
+    local existing = playerGui:FindFirstChild(name)
+    if existing then return existing end
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = name
+    screenGui.ResetOnSpawn = false
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.Parent = playerGui
+    return screenGui
+end
+
+function UILibrary:CreateCorner(parent, radius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = radius or self.Defaults.CornerRadius
+    corner.Parent = parent
+    return corner
+end
+
+function UILibrary:CreateStroke(parent, color, thickness)
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = color or self.Defaults.Theme.MainStroke
+    stroke.Thickness = thickness or 2
+    stroke.Parent = parent
+    return stroke
+end
+
+local Page = {}
+Page.__index = Page
+
+function Page.new(parentScrollingFrame, theme)
+    local self = setmetatable({}, Page)
+    self.frame = Instance.new("Frame")
+    self.frame.Parent = parentScrollingFrame
+    self.frame.BackgroundTransparency = 1
+    self.frame.Size = UDim2.new(1, 0, 1, 0)
+    self.frame.Visible = false
+    self.frame.ZIndex = 20
+    self.buttonCount = 0
+    self.theme = theme
+    self.toggles = {}
+    return self
+end
+
+function Page:CalcPosition(index)
+    local colWidth = 0.46
+    local leftMargin = 0.03
+    local spacingX = 0.04
+    local rowHeight = 45
+    local topMargin = 4
+    local isLeft = (index % 2 == 1)
+    local colIdx = isLeft and 0 or 1
+    local rowIdx = math.floor((index - 1) / 2)
+    local posXScale = leftMargin + colIdx * (colWidth + spacingX)
+    local posYOffset = topMargin + rowIdx * rowHeight
+    return UDim2.new(posXScale, 0, 0, posYOffset), UDim2.new(colWidth, 0, 0, 38)
+end
+
+function Page:UpdateCanvas()
+    local maxY = 0
+    for _, child in ipairs(self.frame:GetChildren()) do
+        if child:IsA("TextButton") or child:IsA("Frame") then
+            local bottom = child.Position.Y.Offset + child.Size.Y.Offset
+            if bottom > maxY then maxY = bottom end
+        end
+    end
+    if maxY == 0 then maxY = 100 end
+    local scrollFrame = self.frame.Parent
+    if scrollFrame and scrollFrame:IsA("ScrollingFrame") then
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, maxY + 20)
+    end
+end
+
+function Page:AddButton(config)
+    self.buttonCount = self.buttonCount + 1
+    local pos, size = self:CalcPosition(self.buttonCount)
+    local btn = Instance.new("TextButton")
+    btn.Parent = self.frame
+    btn.BackgroundColor3 = config.BgColor or self.theme.ButtonBg
+    btn.BackgroundTransparency = 0.5
+    btn.Size = size
+    btn.Position = pos
+    btn.Text = config.Text or "按钮"
+    btn.TextColor3 = config.TextColor or self.theme.ButtonText
+    btn.TextSize = config.TextSize or 14
+    btn.AutoButtonColor = false
+    btn.ZIndex = 21
+    btn.Font = Enum.Font.SourceSansBold
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+    if config.Callback then
+        btn.MouseButton1Click:Connect(config.Callback)
+    end
+    self:UpdateCanvas()
+    return btn
+end
+
+function Page:AddToggle(config)
+    local state = config.Default or false
+    local ref = {}
+    local text = config.Text or "开关"
+    local btn = self:AddButton({
+        Text = text .. "：" .. (state and "开" or "关"),
+        Callback = function()
+            state = not state
+            ref[1].Text = text .. "：" .. (state and "开" or "关")
+            if config.Callback then
+                config.Callback(state)
+            end
+        end
+    })
+    ref[1] = btn
+    self.toggles[text] = {Btn = btn, State = state, Ref = ref}
+    return btn
+end
+
+function Page:AddSlider(config)
+    local sliderPanel = nil
+    local minVal = config.Min or 0
+    local maxVal = config.Max or 100
+    local defaultVal = config.Default or minVal
+    local currentVal = defaultVal
+    local text = config.Text or "滑块"
+    
+    local btn = self:AddButton({
+        Text = text,
+        Callback = function()
+            if not sliderPanel then
+                sliderPanel = self:CreateSliderPanel(config, minVal, maxVal, defaultVal, currentVal, function(val)
+                    currentVal = val
+                    if config.Callback then
+                        config.Callback(val)
+                    end
+                end)
+            end
+            sliderPanel.Visible = not sliderPanel.Visible
+        end
+    })
+    return btn
+end
+
+function Page:CreateSliderPanel(config, minVal, maxVal, defaultVal, currentVal, onChange)
+    local mainFrame = self.frame.Parent.Parent.Parent
+    local panel = Instance.new("Frame")
+    panel.Name = config.Text .. "Panel"
+    panel.Parent = mainFrame
+    panel.Size = UDim2.new(0, 250, 0, 160)
+    panel.Position = UDim2.new(0.5, -125, 0.5, -80)
+    panel.BackgroundColor3 = self.theme.PanelBg
+    panel.BackgroundTransparency = 0.2
+    panel.Visible = false
+    panel.ZIndex = 200
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = panel
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 1.5
+    stroke.Color = self.theme.PanelStroke
+    stroke.Parent = panel
+    
+    local title = Instance.new("TextLabel")
+    title.Parent = panel
+    title.Size = UDim2.new(1, 0, 0, 25)
+    title.Position = UDim2.new(0, 10, 0, 8)
+    title.BackgroundTransparency = 1
+    title.Text = config.Text
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.Font = Enum.Font.SourceSansBold
+    title.TextSize = 16
+    
+    local slider = Instance.new("Frame")
+    slider.Parent = panel
+    slider.Size = UDim2.new(1, -40, 0, 30)
+    slider.Position = UDim2.new(0, 20, 0, 45)
+    slider.BackgroundColor3 = self.theme.SliderTrack
+    local sliderCorner = Instance.new("UICorner")
+    sliderCorner.CornerRadius = UDim.new(0, 6)
+    sliderCorner.Parent = slider
+    
+    local fill = Instance.new("Frame")
+    fill.Parent = slider
+    fill.Size = UDim2.new(0, 0, 1, 0)
+    fill.BackgroundColor3 = self.theme.SliderFill
+    fill.BorderSizePixel = 0
+    local fillCorner = Instance.new("UICorner")
+    fillCorner.CornerRadius = UDim.new(0, 6)
+    fillCorner.Parent = fill
+    
+    local knob = Instance.new("TextButton")
+    knob.Parent = slider
+    knob.Size = UDim2.new(0, 20, 0, 20)
+    knob.Position = UDim2.new(0, -10, 0.5, -10)
+    knob.Text = ""
+    knob.BackgroundColor3 = Color3.new(1, 1, 1)
+    knob.AutoButtonColor = false
+    local knobCorner = Instance.new("UICorner")
+    knobCorner.CornerRadius = UDim.new(1, 0)
+    knobCorner.Parent = knob
+    
+    local inputBox = Instance.new("TextBox")
+    inputBox.Parent = panel
+    inputBox.Size = UDim2.new(0, 80, 0, 28)
+    inputBox.Position = UDim2.new(0, 20, 0, 85)
+    inputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    inputBox.Text = tostring(defaultVal)
+    inputBox.TextColor3 = Color3.new(1, 1, 1)
+    inputBox.Font = Enum.Font.SourceSans
+    inputBox.TextSize = 16
+    local inputCorner = Instance.new("UICorner")
+    inputCorner.CornerRadius = UDim.new(0, 6)
+    inputCorner.Parent = inputBox
+    
+    local function updateDisplay(val)
+        local percent = (val - minVal) / (maxVal - minVal)
+        fill.Size = UDim2.new(percent, 0, 1, 0)
+        knob.Position = UDim2.new(percent, -10, 0.5, -10)
+        inputBox.Text = tostring(math.floor(val))
+    end
+    
+    local function setVal(val)
+        val = math.clamp(math.floor(val), minVal, maxVal)
+        currentVal = val
+        updateDisplay(val)
+        if onChange then onChange(val) end
+    end
+    
+    local confirmBtn = Instance.new("TextButton")
+    confirmBtn.Parent = panel
+    confirmBtn.Size = UDim2.new(0, 80, 0, 28)
+    confirmBtn.Position = UDim2.new(0, 110, 0, 85)
+    confirmBtn.BackgroundColor3 = self.theme.ConfirmBtn
+    confirmBtn.Text = "确认"
+    confirmBtn.TextColor3 = Color3.new(1, 1, 1)
+    confirmBtn.Font = Enum.Font.SourceSansBold
+    confirmBtn.TextSize = 14
+    local confirmCorner = Instance.new("UICorner")
+    confirmCorner.CornerRadius = UDim.new(0, 6)
+    confirmCorner.Parent = confirmBtn
+    confirmBtn.MouseButton1Click:Connect(function()
+        local num = tonumber(inputBox.Text)
+        if num then setVal(num) end
+        panel.Visible = false
+    end)
+    
+    local resetBtn = Instance.new("TextButton")
+    resetBtn.Parent = panel
+    resetBtn.Size = UDim2.new(0, 80, 0, 28)
+    resetBtn.Position = UDim2.new(0, 200, 0, 85)
+    resetBtn.BackgroundColor3 = self.theme.ResetBtn
+    resetBtn.Text = "重置"
+    resetBtn.TextColor3 = Color3.new(1, 1, 1)
+    resetBtn.Font = Enum.Font.SourceSansBold
+    resetBtn.TextSize = 14
+    local resetCorner = Instance.new("UICorner")
+    resetCorner.CornerRadius = UDim.new(0, 6)
+    resetCorner.Parent = resetBtn
+    resetBtn.MouseButton1Click:Connect(function()
+        setVal(defaultVal)
+        panel.Visible = false
+    end)
+    
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Parent = panel
+    closeBtn.Size = UDim2.new(0, 22, 0, 22)
+    closeBtn.Position = UDim2.new(1, -26, 0, 6)
+    closeBtn.BackgroundColor3 = self.theme.CloseBtn
+    closeBtn.Text = "X"
+    closeBtn.TextSize = 12
+    closeBtn.Font = Enum.Font.SourceSansBold
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 4)
+    closeCorner.Parent = closeBtn
+    closeBtn.MouseButton1Click:Connect(function()
+        panel.Visible = false
+    end)
+    
+    local dragging = false
+    local UserInputService = game:GetService("UserInputService")
+    knob.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local mousePos = UserInputService:GetMouseLocation()
+            local sliderAbs = slider.AbsolutePosition
+            local sliderSize = slider.AbsoluteSize
+            local relativeX = math.clamp(mousePos.X - sliderAbs.X, 0, sliderSize.X)
+            local percent = relativeX / sliderSize.X
+            local newVal = math.floor(minVal + (maxVal - minVal) * percent)
+            setVal(newVal)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    inputBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            local num = tonumber(inputBox.Text)
+            if num then setVal(num) end
+        end
+    end)
+    
+    updateDisplay(defaultVal)
+    return panel
+end
+
+function Page:AddPlayerSelector(config)
+    local text = config.Text or "选择"
+    local btn = self:AddButton({
+        Text = text,
+        Callback = function()
+            self:ShowPlayerSelect(config.Callback)
+        end
+    })
+    return btn
+end
+
+function Page:ShowPlayerSelect(onSelect)
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local selectGui = Instance.new("ScreenGui")
+    selectGui.Name = "PlayerSelect"
+    selectGui.Parent = LocalPlayer.PlayerGui
+    selectGui.IgnoreGuiInset = true
+    selectGui.ResetOnSpawn = false
+    local bg = Instance.new("Frame")
+    bg.Parent = selectGui
+    bg.Size = UDim2.new(0, 220, 0, 300)
+    bg.Position = UDim2.new(0.5, -110, 0.5, -150)
+    bg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = bg
+    local title = Instance.new("TextLabel")
+    title.Parent = bg
+    title.Size = UDim2.new(1, 0, 0, 30)
+    title.BackgroundTransparency = 1
+    title.Text = "选择玩家"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.Font = Enum.Font.SourceSansBold
+    title.TextSize = 16
+    local scrollFrame = Instance.new("ScrollingFrame")
+    scrollFrame.Parent = bg
+    scrollFrame.Size = UDim2.new(1, -10, 1, -80)
+    scrollFrame.Position = UDim2.new(0, 5, 0, 35)
+    scrollFrame.BackgroundTransparency = 1
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scrollFrame.ScrollBarThickness = 4
+    local playersList = Players:GetPlayers()
+    local y = 0
+    for _, p in ipairs(playersList) do
+        if p ~= LocalPlayer then
+            local pBtn = Instance.new("TextButton")
+            pBtn.Parent = scrollFrame
+            pBtn.Size = UDim2.new(1, -10, 0, 30)
+            pBtn.Position = UDim2.new(0, 5, 0, y)
+            pBtn.Text = p.Name
+            pBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            pBtn.TextColor3 = Color3.new(1, 1, 1)
+            pBtn.Font = Enum.Font.SourceSans
+            pBtn.TextSize = 14
+            local pCorner = Instance.new("UICorner")
+            pCorner.CornerRadius = UDim.new(0, 6)
+            pCorner.Parent = pBtn
+            pBtn.MouseButton1Click:Connect(function()
+                if onSelect then onSelect(p) end
+                selectGui:Destroy()
+            end)
+            y = y + 35
+        end
+    end
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, y)
+    local cancelBtn = Instance.new("TextButton")
+    cancelBtn.Parent = bg
+    cancelBtn.Size = UDim2.new(1, -20, 0, 30)
+    cancelBtn.Position = UDim2.new(0, 10, 1, -40)
+    cancelBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    cancelBtn.Text = "取消"
+    cancelBtn.TextColor3 = Color3.new(1, 1, 1)
+    cancelBtn.Font = Enum.Font.SourceSansBold
+    cancelBtn.TextSize = 14
+    local cancelCorner = Instance.new("UICorner")
+    cancelCorner.CornerRadius = UDim.new(0, 6)
+    cancelCorner.Parent = cancelBtn
+    cancelBtn.MouseButton1Click:Connect(function()
+        selectGui:Destroy()
+    end)
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Parent = bg
+    closeBtn.Size = UDim2.new(0, 30, 0, 20)
+    closeBtn.Position = UDim2.new(1, -35, 0, 5)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    closeBtn.Text = "X"
+    closeBtn.TextColor3 = Color3.new(1, 1, 1)
+    closeBtn.Font = Enum.Font.SourceSansBold
+    closeBtn.TextSize = 14
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 4)
+    closeCorner.Parent = closeBtn
+    closeBtn.MouseButton1Click:Connect(function()
+        selectGui:Destroy()
+    end)
+end
+
+function UILibrary:CreateWindow(config)
+    config = config or {}
+    local theme = self.Defaults.Theme
+    if config.Theme then
+        for k, v in pairs(config.Theme) do
+            theme[k] = v
+        end
+    end
+    
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local UserInputService = game:GetService("UserInputService")
+    local LocalPlayer = Players.LocalPlayer
+    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+    
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = config.ScreenGuiName or "UniversalUI"
+    ScreenGui.Parent = PlayerGui
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ScreenGui.IgnoreGuiInset = true
+    ScreenGui.ResetOnSpawn = false
+    
+    local Main = Instance.new("Frame")
+    Main.Name = "Main"
+    Main.Parent = ScreenGui
+    Main.BackgroundColor3 = theme.MainBg
+    Main.Position = UDim2.new(0.5, 0, 0.5, 10)
+    Main.Size = UDim2.new(0, 650, 0, 280)
+    Main.AnchorPoint = Vector2.new(0.5, 0.5)
+    Main.Visible = false
+    Main.ZIndex = 10
+    Main.ClipsDescendants = true
+    local MainCorner = Instance.new("UICorner")
+    MainCorner.CornerRadius = UDim.new(0, 10)
+    MainCorner.Parent = Main
+    local MainStroke = Instance.new("UIStroke")
+    MainStroke.Thickness = 2
+    MainStroke.Color = theme.MainStroke
+    MainStroke.Parent = Main
+    
+    local BeanBack = Instance.new("Frame")
+    BeanBack.Name = "BeanBackground"
+    BeanBack.Parent = Main
+    BeanBack.BackgroundTransparency = 1
+    BeanBack.Size = UDim2.new(1, 0, 1, 0)
+    BeanBack.ZIndex = 1
+    
+    local Line = Instance.new("Frame")
+    Line.Parent = Main
+    Line.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Line.Position = UDim2.new(0.3, 0, 0, 40)
+    Line.Size = UDim2.new(0, 2, 1, -40)
+    Line.ZIndex = 11
+    
+    local CategoryArea = Instance.new("Frame")
+    CategoryArea.Name = "CategoryArea"
+    CategoryArea.Parent = Main
+    CategoryArea.BackgroundTransparency = 1
+    CategoryArea.Size = UDim2.new(0.3, -10, 1, -40)
+    CategoryArea.Position = UDim2.new(0, 10, 0, 40)
+    CategoryArea.ZIndex = 20
+    
+    local ContentArea = Instance.new("Frame")
+    ContentArea.Name = "ContentArea"
+    ContentArea.Parent = Main
+    ContentArea.BackgroundTransparency = 1
+    ContentArea.Size = UDim2.new(0.7, -12, 1, -40)
+    ContentArea.Position = UDim2.new(0.3, 12, 0, 40)
+    ContentArea.ZIndex = 20
+    ContentArea.ClipsDescendants = true
+    
+    local ScrollingFrame = Instance.new("ScrollingFrame")
+    ScrollingFrame.Parent = ContentArea
+    ScrollingFrame.BackgroundTransparency = 1
+    ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 200)
+    ScrollingFrame.ScrollBarThickness = 6
+    ScrollingFrame.BorderSizePixel = 0
+    ScrollingFrame.ZIndex = 20
+    
+    local TopBar = Instance.new("Frame")
+    TopBar.Name = "TopBar"
+    TopBar.Parent = Main
+    TopBar.BackgroundColor3 = theme.TopBar
+    TopBar.Size = UDim2.new(1, 0, 0, 40)
+    TopBar.ZIndex = 15
+    local TopCorner = Instance.new("UICorner")
+    TopCorner.CornerRadius = UDim.new(0, 10)
+    TopCorner.Parent = TopBar
+    
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Parent = TopBar
+    Title.BackgroundTransparency = 1
+    Title.Size = UDim2.new(1, -100, 1, 0)
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.Font = Enum.Font.ArialBold
+    Title.Text = config.Title or "通用脚本"
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextSize = 18
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.ZIndex = 16
+    
+    local MinimizeBtn = Instance.new("TextButton")
+    MinimizeBtn.Parent = TopBar
+    MinimizeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    MinimizeBtn.Size = UDim2.new(0, 36, 0, 32)
+    MinimizeBtn.Position = UDim2.new(1, -86, 0, 4)
+    MinimizeBtn.Font = Enum.Font.ArialBold
+    MinimizeBtn.Text = "—"
+    MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MinimizeBtn.TextSize = 20
+    MinimizeBtn.ZIndex = 17
+    local MinCorner = Instance.new("UICorner")
+    MinCorner.CornerRadius = UDim.new(0, 6)
+    MinCorner.Parent = MinimizeBtn
+    
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Parent = TopBar
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    CloseBtn.Size = UDim2.new(0, 36, 0, 32)
+    CloseBtn.Position = UDim2.new(1, -46, 0, 4)
+    CloseBtn.Font = Enum.Font.ArialBold
+    CloseBtn.Text = "X"
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.TextSize = 20
+    CloseBtn.ZIndex = 17
+    local CloseCorner = Instance.new("UICorner")
+    CloseCorner.CornerRadius = UDim.new(0, 6)
+    CloseCorner.Parent = CloseBtn
+    
+    local ToggleBtn = Instance.new("TextButton")
+    ToggleBtn.Parent = ScreenGui
+    ToggleBtn.BackgroundColor3 = Color3.new(0, 0, 0)
+    ToggleBtn.BackgroundTransparency = 0.5
+    ToggleBtn.Position = UDim2.new(0.8, 0, 0.3, 0)
+    ToggleBtn.Size = UDim2.new(0, 140, 0, 50)
+    ToggleBtn.Font = Enum.Font.ArialBold
+    ToggleBtn.Text = config.ToggleText or "打开菜单"
+    ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleBtn.TextSize = 20
+    ToggleBtn.ZIndex = 100
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 8)
+    ToggleCorner.Parent = ToggleBtn
+    
+    local dragging, dragInput, dragStartPos, btnStartPos = false, nil, nil, nil
+    ToggleBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if not dragging and not dragInput then
+                dragging = true
+                dragInput = input
+                dragStartPos = input.Position
+                btnStartPos = ToggleBtn.Position
+            end
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input == dragInput then
+            local delta = input.Position - dragStartPos
+            ToggleBtn.Position = UDim2.new(btnStartPos.X.Scale, btnStartPos.X.Offset + delta.X, btnStartPos.Y.Scale, btnStartPos.Y.Offset + delta.Y)
+        end
+    end)
+    ToggleBtn.InputEnded:Connect(function(input)
+        if input == dragInput then
+            dragging = false
+            dragInput = nil
+        end
+    end)
+    
+    ToggleBtn.MouseButton1Click:Connect(function()
+        Main.Visible = not Main.Visible
+        ToggleBtn.Text = Main.Visible and (config.ToggleTextClose or "关闭菜单") or (config.ToggleText or "打开菜单")
+    end)
+    MinimizeBtn.MouseButton1Click:Connect(function()
+        Main.Visible = false
+        ToggleBtn.Text = config.ToggleText or "打开菜单"
+    end)
+    CloseBtn.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+    
+    local beans = {"🤓", "😎", "🥳"}
+    local weight = {1, 1, 5}
+    local function GetRandomBean()
+        local total = 0
+        for _, v in pairs(weight) do total += v end
+        local r = math.random(1, total)
+        local curr = 0
+        for i = 1, #weight do
+            curr += weight[i]
+            if r <= curr then return beans[i] end
+        end
+        return "🥳"
+    end
+    local function SpawnBean()
+        if #BeanBack:GetChildren() > 25 then return end
+        local label = Instance.new("TextLabel")
+        label.Parent = BeanBack
+        label.BackgroundTransparency = 1
+        label.Size = UDim2.new(0, 22, 0, 22)
+        label.Text = GetRandomBean()
+        label.TextSize = 18
+        label.Font = Enum.Font.Unknown
+        label.ZIndex = 1
+        local x = math.random(0, Main.AbsoluteSize.X - 22)
+        label.Position = UDim2.new(0, x, 0, -22)
+        local speed = math.random(30, 50)
+        local drift = math.random(-15, 15)
+        local alpha = 0
+        local conn
+        conn = RunService.Heartbeat:Connect(function(dt)
+            if not label or not label.Parent then conn:Disconnect() return end
+            if not Main.Visible then return end
+            alpha += dt
+            local newY = alpha * speed - 22
+            if newY > Main.AbsoluteSize.Y then conn:Disconnect() label:Destroy() return end
+            label.Position = UDim2.new(0, x + math.sin(alpha * 1.2) * drift, 0, newY)
+        end)
+    end
+    task.spawn(function()
+        while task.wait(math.random(150, 300) / 1000) do
+            if ScreenGui and ScreenGui.Parent then
+                SpawnBean()
+            else
+                break
+            end
+        end
+    end)
+    
+    local window = {
+        ScreenGui = ScreenGui,
+        Main = Main,
+        ScrollingFrame = ScrollingFrame,
+        CategoryArea = CategoryArea,
+        ContentArea = ContentArea,
+        Pages = {},
+        Categories = {},
+        Selected = nil,
+        Theme = theme,
+    }
+    
+    function window:AddPage(name)
+        local cat = Instance.new("TextButton")
+        cat.Name = "Cat" .. name
+        cat.Parent = self.CategoryArea
+        cat.BackgroundTransparency = 0.8
+        cat.BackgroundColor3 = self.Theme.CatBg
+        cat.Size = UDim2.new(1, 0, 0, 35)
+        cat.Position = UDim2.new(0, 0, 0, (#self.Categories) * 40)
+        cat.Text = name
+        cat.TextColor3 = Color3.new(1, 1, 1)
+        cat.TextSize = 14
+        cat.AutoButtonColor = false
+        cat.ZIndex = 21
+        cat.Font = Enum.Font.SourceSansBold
+        
+        local page = Page.new(self.ScrollingFrame, self.Theme)
+        page.frame.Name = "Page" .. name
+        self.Pages[name] = page
+        
+        cat.MouseButton1Click:Connect(function()
+            if self.Selected then
+                self.Selected.BackgroundTransparency = 0.8
+                self.Selected.BackgroundColor3 = self.Theme.CatBg
+            end
+            cat.BackgroundTransparency = 0.5
+            cat.BackgroundColor3 = self.Theme.CatActive
+            self.Selected = cat
+            for _, p in pairs(self.Pages) do
+                p.frame.Visible = false
+            end
+            for _, child in ipairs(self.Main:GetChildren()) do
+                if child:IsA("Frame") and child.Name:find("Panel") then
+                    child.Visible = false
+                end
+            end
+            page.frame.Visible = true
+            page:UpdateCanvas()
+        end)
+        
+        table.insert(self.Categories, cat)
+        return page
+    end
+    
+    task.defer(function()
+        if self.Categories[1] then
+            self.Categories[1]:MouseButton1Click()
+        end
+    end)
+    
+    return window
+end
+
+function UILibrary:Init(config)
+    config = config or {}
+    if config.Theme then
+        for k, v in pairs(config.Theme) do
+            self.Defaults.Theme[k] = v
+        end
+    end
+    return self
+end
+
+return UILibrary
