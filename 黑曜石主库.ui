@@ -279,8 +279,8 @@ local Templates = {
 
     --// Library \\--
     Window = {
-        Title = "黑曜石主库",
-        Footer = "黑曜石 UI 库",
+        Title = "No Title",
+        Footer = "No Footer",
         Position = UDim2.fromOffset(6, 6),
         Size = UDim2.fromOffset(720, 600),
         IconSize = UDim2.fromOffset(30, 30),
@@ -312,7 +312,7 @@ local Templates = {
         CompactWidthActivation = 128,
     },
     Toggle = {
-        Text = "开关",
+        Text = "Toggle",
         Default = false,
 
         Callback = function() end,
@@ -323,7 +323,7 @@ local Templates = {
         Visible = true,
     },
     Input = {
-        Text = "输入框",
+        Text = "Input",
         Default = "",
         Finished = false,
         Numeric = false,
@@ -339,7 +339,7 @@ local Templates = {
         Visible = true,
     },
     Slider = {
-        Text = "滑块",
+        Text = "Slider",
         Default = 0,
         Min = 0,
         Max = 100,
@@ -402,7 +402,7 @@ local Templates = {
 
     --// Addons \\-
     KeyPicker = {
-        Text = "键位选择",
+        Text = "KeyPicker",
         Default = "None",
         DefaultModifiers = {},
         Mode = "Toggle",
@@ -1111,7 +1111,7 @@ local function ParentUI(UI: Instance, SkipHiddenUI: boolean?)
 end
 
 local ScreenGui = New("ScreenGui", {
-    Name = "黑曜石主库",
+    Name = "Obsidian",
     DisplayOrder = 999,
     ResetOnSpawn = false,
 })
@@ -5928,7 +5928,7 @@ function Library:CreateWindow(WindowInfo)
     local LastExpandedWidth = InitialLeftWidth
 
     do
-        Library.KeybindFrame, Library.KeybindContainer = Library:AddDraggableMenu("键位绑定")
+        Library.KeybindFrame, Library.KeybindContainer = Library:AddDraggableMenu("Keybinds")
         Library.KeybindFrame.AnchorPoint = Vector2.new(0, 0.5)
         Library.KeybindFrame.Position = UDim2.new(0, 6, 0.5, 0)
         Library.KeybindFrame.Visible = false
@@ -6107,7 +6107,7 @@ function Library:CreateWindow(WindowInfo)
 
         SearchBox = New("TextBox", {
             BackgroundColor3 = "MainColor",
-            PlaceholderText = "搜索",
+            PlaceholderText = "Search",
             Size = WindowInfo.SearchbarSize,
             TextScaled = true,
             Visible = not (WindowInfo.DisableSearch or false),
@@ -6351,7 +6351,7 @@ function Library:CreateWindow(WindowInfo)
 
         if select("#", ...) == 1 and typeof(...) == "table" then
             local Info = select(1, ...)
-            Name = Info.Name or "标签页"
+            Name = Info.Name or "Tab"
             Icon = Info.Icon
             Description = Info.Description
         else
@@ -7069,7 +7069,7 @@ function Library:CreateWindow(WindowInfo)
 
         if select("#", ...) == 1 and typeof(...) == "table" then
             local Info = select(1, ...)
-            Name = Info.Name or "标签页"
+            Name = Info.Name or "Tab"
             Icon = Info.Icon
             Description = Info.Description
         else
@@ -7443,9 +7443,9 @@ function Library:CreateWindow(WindowInfo)
             Library:Toggle()
         end, true)
 
-        local LockButton = Library:AddDraggableButton("锁定", function(self)
+        local LockButton = Library:AddDraggableButton("Lock", function(self)
             Library.CantDragForced = not Library.CantDragForced
-            self:SetText(Library.CantDragForced and "解开锁定" or "锁定")
+            self:SetText(Library.CantDragForced and "Unlock" or "Lock")
         end, true)
 
         if WindowInfo.MobileButtonsSide == "Right" then
