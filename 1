@@ -1,0 +1,77 @@
+local repo = 'https://raw.githubusercontent.com/KingScriptAE/No-sirve-nada./refs/heads/main/'
+local function safeLoad(url)
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet(url))()
+    end)
+    if not success then
+        warn("加载失败: " .. url)
+        return nil
+    end
+    return result
+end
+
+local Library = safeLoad(repo .. 'Library.lua')
+local ThemeManager = safeLoad(repo .. 'addons/ThemeManager.lua')
+local SaveManager = safeLoad(repo .. 'addons/SaveManager.lua')
+
+if not Library then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "错误",
+        Text = "UI 库加载失败，请检查网络或脚本资源",
+        Duration = 5,
+    })
+    return
+end
+
+local Window = Library:CreateWindow({
+    Title = "自定义UI控件",
+    Footer = "By 恐拜大帝",
+    Icon = 131153193945220,
+    NotifySide = "Right",
+    ShowCustomCursor = true,
+})
+
+Library:Notify("自定义UI控件 - 创作者：恐拜大帝", 5)
+
+local Tabs = {
+    Notice = Window:AddTab("通知", "info"),
+    Main = Window:AddTab("功能", "info"),
+    Settings = Window:AddTab("设置", "settings"),
+}
+
+local NoticeGroup = Tabs.Notice:AddLeftGroupbox("作者消息")
+NoticeGroup:AddLabel('恐拜大帝将持续更新此脚本')
+NoticeGroup:AddLabel('创作者：恐拜大帝')
+
+local MainGroup = Tabs.Main:AddLeftGroupbox("主要")
+MainGroup:AddLabel('功能区域')
+
+local SettingsGroup = Tabs.Settings:AddLeftGroupbox("菜单")
+SettingsGroup:AddButton({ Text = '卸载脚本', Func = function()
+    Library:Unload()
+end })
+
+SettingsGroup:AddButton({ Text = '重载界面', Func = function()
+    Library:Unload()
+    loadstring(game:HttpGet(game:GetService("HttpService"):UrlEncode("https://pastebin.com/raw/你的脚本地址")))()
+end })
+
+SettingsGroup:AddLabel('菜单快捷键'):AddKeyPicker('MenuKeybind', {
+    Default = 'RightShift',
+    NoUI = true,
+    Text = 'Menu keybind'
+})
+Library.ToggleKeybind = Library.Options.MenuKeybind
+
+if ThemeManager then
+    ThemeManager:SetLibrary(Library)
+    ThemeManager:SetFolder("MyScriptTheme")
+    ThemeManager:ApplyToTab(Tabs.Settings)
+end
+
+if SaveManager then
+    SaveManager:SetLibrary(Library)
+    SaveManager:IgnoreThemeSettings()
+    SaveManager:SetFolder("MyScriptConfig")
+    SaveManager:BuildConfigSection(Tabs.Settings)
+end
