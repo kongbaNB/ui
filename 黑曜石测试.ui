@@ -1567,7 +1567,12 @@ function Library:AddDraggableButton(Text: string, Func, ExcludeScaling: boolean?
         local X, Y = Library:GetTextBounds(Text, Library.Scheme.Font, 16)
 
         Button.Text = Text
-        Button.Size = UDim2.fromOffset(X * 2, Y * 2)
+        -- 保持按钮大小不变，只更新文本，避免不同文本长度导致按钮大小变化
+        local CurrentWidth = Button.Size.X.Offset
+        local CurrentHeight = Button.Size.Y.Offset
+        local NewWidth = math.max(CurrentWidth, X * 2)
+        local NewHeight = math.max(CurrentHeight, Y * 2)
+        Button.Size = UDim2.fromOffset(NewWidth, NewHeight)
     end
     Table:SetText(Text)
 
