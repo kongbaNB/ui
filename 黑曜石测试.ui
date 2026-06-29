@@ -7469,7 +7469,7 @@ function Library:CreateWindow(WindowInfo)
             Library:Toggle()
         end, true)
 
-        local LockButton = Library:AddDraggableButton("锁   定", function(self)
+        local LockButton = Library:AddDraggableButton("锁  定", function(self)
             Library.CantDragForced = not Library.CantDragForced
             self:SetText(Library.CantDragForced and "解     锁" or "锁   定")
         end, true)
