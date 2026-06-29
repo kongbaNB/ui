@@ -6039,7 +6039,7 @@ function Library:CreateWindow(WindowInfo)
             Parent = TitleHolder,
         })
 
-        --// 彩虹炫彩效果（1.5秒一圈，基础旋转）
+        --// 彩虹炫彩效果（1.5秒一圈，基础旋转，无间隔）
         local WindowTitleGradient = New("UIGradient", {
             Color = ColorSequence.new({
                 ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),
@@ -6055,10 +6055,14 @@ function Library:CreateWindow(WindowInfo)
             Parent = WindowTitle,
         })
 
-        --// 1.5秒一圈，基础旋转，无跳变/加速
-        local RainbowTweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Linear, Enum.EasingDirection.In, -1)
-        local RainbowTween = TweenService:Create(WindowTitleGradient, RainbowTweenInfo, {Rotation = 360})
-        RainbowTween:Play()
+        --// 1.5秒一圈，无间隔循环（不用-1，用Completed回调无缝衔接）
+        local function startRainbow()
+            WindowTitleGradient.Rotation = 0
+            local tween = TweenService:Create(WindowTitleGradient, TweenInfo.new(1.5, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {Rotation = 360})
+            tween.Completed:Connect(startRainbow)
+            tween:Play()
+        end
+        startRainbow()
 
 
         --// Top Right Bar
