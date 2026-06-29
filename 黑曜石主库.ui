@@ -6039,6 +6039,32 @@ function Library:CreateWindow(WindowInfo)
             Parent = TitleHolder,
         })
 
+        --// 彩虹炫彩效果（1.5秒一圈，基础旋转，无间隔）
+        local WindowTitleGradient = New("UIGradient", {
+            Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),
+                ColorSequenceKeypoint.new(0.14, Color3.fromRGB(255, 127, 0)),
+                ColorSequenceKeypoint.new(0.28, Color3.fromRGB(255, 255, 0)),
+                ColorSequenceKeypoint.new(0.42, Color3.fromRGB(0, 255, 0)),
+                ColorSequenceKeypoint.new(0.56, Color3.fromRGB(0, 255, 255)),
+                ColorSequenceKeypoint.new(0.70, Color3.fromRGB(0, 0, 255)),
+                ColorSequenceKeypoint.new(0.84, Color3.fromRGB(139, 0, 255)),
+                ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 0))
+            }),
+            Rotation = 0,
+            Parent = WindowTitle,
+        })
+
+        --// 1.5秒一圈，无间隔循环（不用-1，用Completed回调无缝衔接）
+        local function startRainbow()
+            WindowTitleGradient.Rotation = 0
+            local tween = TweenService:Create(WindowTitleGradient, TweenInfo.new(1.5, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {Rotation = 360})
+            tween.Completed:Connect(startRainbow)
+            tween:Play()
+        end
+        startRainbow()
+
+
         --// Top Right Bar
         RightWrapper = New("Frame", {
             AnchorPoint = Vector2.new(1, 0.5),
@@ -7439,13 +7465,13 @@ function Library:CreateWindow(WindowInfo)
     end
 
     if Library.IsMobile then
-        local ToggleButton = Library:AddDraggableButton("Toggle", function()
+        local ToggleButton = Library:AddDraggableButton("开    关", function()
             Library:Toggle()
         end, true)
 
-        local LockButton = Library:AddDraggableButton("Lock", function(self)
+        local LockButton = Library:AddDraggableButton("锁定", function(self)
             Library.CantDragForced = not Library.CantDragForced
-            self:SetText(Library.CantDragForced and "Unlock" or "Lock")
+            self:SetText(Library.CantDragForced and "解锁" or "锁定")
         end, true)
 
         if WindowInfo.MobileButtonsSide == "Right" then
