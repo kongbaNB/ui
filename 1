@@ -1,4 +1,3 @@
-local repo = 'https://raw.githubusercontent.com/KingScriptAE/No-sirve-nada./refs/heads/main/'
 local function safeLoad(url)
     local success, result = pcall(function()
         return loadstring(game:HttpGet(url))()
@@ -10,9 +9,9 @@ local function safeLoad(url)
     return result
 end
 
-local Library = safeLoad(repo .. 'Library.lua')
-local ThemeManager = safeLoad(repo .. 'addons/ThemeManager.lua')
-local SaveManager = safeLoad(repo .. 'addons/SaveManager.lua')
+local Library = safeLoad("https://raw.githubusercontent.com/kongbaNB/ui/refs/heads/main/黑曜石主库.ui")
+local ThemeManager = safeLoad("https://raw.githubusercontent.com/kongbaNB/ui/refs/heads/main/主题管理.ui")
+local SaveManager = safeLoad("https://raw.githubusercontent.com/kongbaNB/ui/refs/heads/main/配置管理.ui")
 
 if not Library then
     game:GetService("StarterGui"):SetCore("SendNotification", {
@@ -23,45 +22,35 @@ if not Library then
     return
 end
 
+local Options = Library.Options
+local Toggles = Library.Toggles
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+
+end
+
 local Window = Library:CreateWindow({
-    Title = "自定义UI控件",
-    Footer = "By 恐拜大帝",
+    Title = "脚本ui库",
+    Footer = "恐拜大帝 制作",
     Icon = 131153193945220,
     NotifySide = "Right",
     ShowCustomCursor = true,
 })
 
-Library:Notify("自定义UI控件 - 创作者：恐拜大帝", 5)
+Library:Notify("脚本ui库 - 创作者：恐拜大帝", 5)
 
 local Tabs = {
     Notice = Window:AddTab("通知", "info"),
-    Main = Window:AddTab("功能", "info"),
+    Main = Window:AddTab("主要", "info"),
     Settings = Window:AddTab("设置", "settings"),
 }
 
 local NoticeGroup = Tabs.Notice:AddLeftGroupbox("作者消息")
 NoticeGroup:AddLabel('恐拜大帝将持续更新此脚本')
 NoticeGroup:AddLabel('创作者：恐拜大帝')
-
-local MainGroup = Tabs.Main:AddLeftGroupbox("主要")
-MainGroup:AddLabel('功能区域')
-
-local SettingsGroup = Tabs.Settings:AddLeftGroupbox("菜单")
-SettingsGroup:AddButton({ Text = '卸载脚本', Func = function()
-    Library:Unload()
-end })
-
-SettingsGroup:AddButton({ Text = '重载界面', Func = function()
-    Library:Unload()
-    loadstring(game:HttpGet(game:GetService("HttpService"):UrlEncode("https://pastebin.com/raw/你的脚本地址")))()
-end })
-
-SettingsGroup:AddLabel('菜单快捷键'):AddKeyPicker('MenuKeybind', {
-    Default = 'RightShift',
-    NoUI = true,
-    Text = 'Menu keybind'
-})
-Library.ToggleKeybind = Library.Options.MenuKeybind
 
 if ThemeManager then
     ThemeManager:SetLibrary(Library)
