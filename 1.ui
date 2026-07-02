@@ -29,9 +29,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 
-
-end
-
 local Window = Library:CreateWindow({
     Title = "脚本ui库",
     Footer = "恐拜大帝 制作",
@@ -40,7 +37,11 @@ local Window = Library:CreateWindow({
     ShowCustomCursor = true,
 })
 
-Library:Notify("脚本ui库 - 创作者：恐拜大帝", 5)
+Library:Notify({
+    Title = "脚本ui库",
+    Description = "创作者：恐拜大帝\nQQ：3999698324\n脚本已加载成功",
+    Time = 5,
+})
 
 local Tabs = {
     Notice = Window:AddTab("通知", "info"),
@@ -51,6 +52,11 @@ local Tabs = {
 local NoticeGroup = Tabs.Notice:AddLeftGroupbox("作者消息")
 NoticeGroup:AddLabel('恐拜大帝将持续更新此脚本')
 NoticeGroup:AddLabel('创作者：恐拜大帝')
+
+local UnloadGroup = Tabs.Settings:AddLeftGroupbox("脚本管理")
+UnloadGroup:AddButton("卸载脚本", function()
+    Library:Unload()
+end)
 
 if ThemeManager then
     ThemeManager:SetLibrary(Library)
