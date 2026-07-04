@@ -85,6 +85,7 @@ function Page.new(parentScrollingFrame, theme)
     self.buttonCount = 0
     self.theme = theme
     self.toggles = {}
+    self.scrollFrame = parentScrollingFrame
     return self
 end
 
@@ -115,9 +116,8 @@ function Page:UpdateCanvas()
         end
     end
     if maxY == 0 then maxY = 100 end
-    local scrollFrame = self.frame.Parent
-    if scrollFrame and scrollFrame:IsA("ScrollingFrame") then
-        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, maxY + 20)
+    if self.scrollFrame and self.scrollFrame:IsA("ScrollingFrame") then
+        self.scrollFrame.CanvasSize = UDim2.new(0, 0, 0, maxY + 20)
     end
 end
 
@@ -200,6 +200,9 @@ function Page:AddSlider(config)
                 end)
                 sliderPanel.Size = targetSize
                 sliderPanel.Position = targetPos
+            end
+            if panelOpen and not sliderPanel.Visible then
+                panelOpen = false
             end
             if not panelOpen then
                 tweenPanelOpen(sliderPanel, targetSize, targetPos)
@@ -640,6 +643,9 @@ function Page:AddCoordPanel(config)
                 panel.Size = targetSize
                 panel.Position = targetPos
             end
+            if panelOpen and not panel.Visible then
+                panelOpen = false
+            end
             if not panelOpen then
                 tweenPanelOpen(panel, targetSize, targetPos)
                 panelOpen = true
@@ -803,6 +809,9 @@ function Page:AddAimbotPanel(config)
                 panel = self:CreateAimbotPanel(config)
                 panel.Size = targetSize
                 panel.Position = targetPos
+            end
+            if panelOpen and not panel.Visible then
+                panelOpen = false
             end
             if not panelOpen then
                 tweenPanelOpen(panel, targetSize, targetPos)
@@ -968,6 +977,9 @@ function Page:AddHarassSpeedPanel(config)
                 panel.Size = targetSize
                 panel.Position = targetPos
             end
+            if panelOpen and not panel.Visible then
+                panelOpen = false
+            end
             if not panelOpen then
                 tweenPanelOpen(panel, targetSize, targetPos)
                 panelOpen = true
@@ -1132,6 +1144,9 @@ function Page:AddSpinSpeedPanel(config)
                 panel.Size = targetSize
                 panel.Position = targetPos
             end
+            if panelOpen and not panel.Visible then
+                panelOpen = false
+            end
             if not panelOpen then
                 tweenPanelOpen(panel, targetSize, targetPos)
                 panelOpen = true
@@ -1248,6 +1263,9 @@ function Page:AddInstanceIdPanel(config)
                 panel.Size = targetSize
                 panel.Position = targetPos
             end
+            if panelOpen and not panel.Visible then
+                panelOpen = false
+            end
             if not panelOpen then
                 tweenPanelOpen(panel, targetSize, targetPos)
                 panelOpen = true
@@ -1349,6 +1367,9 @@ function Page:AddPlaceIdPanel(config)
                 panel.Size = targetSize
                 panel.Position = targetPos
             end
+            if panelOpen and not panel.Visible then
+                panelOpen = false
+            end
             if not panelOpen then
                 tweenPanelOpen(panel, targetSize, targetPos)
                 panelOpen = true
@@ -1448,6 +1469,9 @@ function Page:AddTeleportServerPanel(config)
                 panel.Size = targetSize
                 panel.Position = targetPos
             end
+            if panelOpen and not panel.Visible then
+                panelOpen = false
+            end
             if not panelOpen then
                 tweenPanelOpen(panel, targetSize, targetPos)
                 panelOpen = true
@@ -1492,29 +1516,7 @@ function Page:CreateSavedServersPanel(config)
     scrollFrame.BackgroundTransparency = 1
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
     scrollFrame.ScrollBarThickness = 4
-
-    local HttpService = game:GetService("HttpService")
-    local saveFileName = "UILibrary_SavedServers.json"
-    local function loadServers()
-        if isfile and isfile(saveFileName) then
-            local ok, result = pcall(function()
-                return HttpService:JSONDecode(readfile(saveFileName))
-            end)
-            if ok and type(result) == "table" then
-                return result
-            end
-        end
-        return config.Servers or {}
-    end
-    local function saveToFile(data)
-        if writefile then
-            pcall(function()
-                writefile(saveFileName, HttpService:JSONEncode(data))
-            end)
-        end
-    end
-    local servers = loadServers()
-
+    local servers = config.Servers or {}
     local function refreshList()
         for _, child in ipairs(scrollFrame:GetChildren()) do
             if child:IsA("Frame") then
@@ -1614,16 +1616,10 @@ function Page:CreateSavedServersPanel(config)
                 clCorner.Parent = cancelBtn
                 confirmBtn.MouseButton1Click:Connect(function()
                     if config.OnRename then
-                        pcall(function() config.OnRename(entry.id, input.Text) end)
-                    end
-                    for _, s in ipairs(servers) do
-                        if s.id == entry.id then
-                            s.name = input.Text
-                            break
+                        if config.OnRename(entry.id, input.Text) then
+                            refreshList()
                         end
                     end
-                    saveToFile(servers)
-                    refreshList()
                     renamePanel:Destroy()
                 end)
                 cancelBtn.MouseButton1Click:Connect(function() renamePanel:Destroy() end)
@@ -1642,16 +1638,9 @@ function Page:CreateSavedServersPanel(config)
             delCorner.Parent = delBtn
             delBtn.MouseButton1Click:Connect(function()
                 if config.OnDelete then
-                    pcall(function() config.OnDelete(entry.id) end)
+                    config.OnDelete(entry.id)
+                    refreshList()
                 end
-                for i = #servers, 1, -1 do
-                    if servers[i].id == entry.id then
-                        table.remove(servers, i)
-                        break
-                    end
-                end
-                saveToFile(servers)
-                refreshList()
             end)
             y = y + 35
         end
@@ -1717,11 +1706,9 @@ function Page:CreateSavedServersPanel(config)
         cl.Parent = cancelBtn
         confirmBtn.MouseButton1Click:Connect(function()
             if config.OnSave then
-                pcall(function() config.OnSave(game.JobId, input.Text) end)
+                config.OnSave(game.JobId, input.Text)
+                refreshList()
             end
-            table.insert(servers, {id = game.JobId, name = input.Text})
-            saveToFile(servers)
-            refreshList()
             namePanel:Destroy()
         end)
         cancelBtn.MouseButton1Click:Connect(function() namePanel:Destroy() end)
@@ -1758,6 +1745,219 @@ function Page:AddSavedServersPanel(config)
                 panel = self:CreateSavedServersPanel(config)
                 panel.Size = targetSize
                 panel.Position = targetPos
+            end
+            if panelOpen and not panel.Visible then
+                panelOpen = false
+            end
+            if not panelOpen then
+                tweenPanelOpen(panel, targetSize, targetPos)
+                panelOpen = true
+            else
+                tweenPanelClose(panel)
+                panelOpen = false
+            end
+        end
+    })
+    return btn
+end
+
+function Page:CreateKickPanel(config)
+    local mainFrame = self:GetMain()
+    local panel = Instance.new("Frame")
+    panel.Name = "KickPanel"
+    panel.Parent = mainFrame
+    panel.BackgroundColor3 = self.theme.PanelBg
+    panel.BackgroundTransparency = 0.2
+    panel.Visible = false
+    panel.ZIndex = 200
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = panel
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 1.5
+    stroke.Color = self.theme.PanelStroke
+    stroke.Parent = panel
+    local title = Instance.new("TextLabel")
+    title.Parent = panel
+    title.Size = UDim2.new(1, 0, 0, 25)
+    title.Position = UDim2.new(0, 10, 0, 8)
+    title.BackgroundTransparency = 1
+    title.Text = config.Title or "自定义踢出"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.Font = Enum.Font.SourceSansBold
+    title.TextSize = 16
+    local inputBox = Instance.new("TextBox")
+    inputBox.Parent = panel
+    inputBox.Size = UDim2.new(1, -20, 0, 28)
+    inputBox.Position = UDim2.new(0, 10, 0, 40)
+    inputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    inputBox.PlaceholderText = "输入玩家名称"
+    inputBox.TextColor3 = Color3.new(1, 1, 1)
+    inputBox.Font = Enum.Font.SourceSans
+    inputBox.TextSize = 14
+    local inputCorner = Instance.new("UICorner")
+    inputCorner.CornerRadius = UDim.new(0, 6)
+    inputCorner.Parent = inputBox
+    local reasonBox = Instance.new("TextBox")
+    reasonBox.Parent = panel
+    reasonBox.Size = UDim2.new(1, -20, 0, 28)
+    reasonBox.Position = UDim2.new(0, 10, 0, 75)
+    reasonBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    reasonBox.PlaceholderText = "输入踢出原因（可选）"
+    reasonBox.TextColor3 = Color3.new(1, 1, 1)
+    reasonBox.Font = Enum.Font.SourceSans
+    reasonBox.TextSize = 14
+    local reasonCorner = Instance.new("UICorner")
+    reasonCorner.CornerRadius = UDim.new(0, 6)
+    reasonCorner.Parent = reasonBox
+    local kickBtn = Instance.new("TextButton")
+    kickBtn.Parent = panel
+    kickBtn.Size = UDim2.new(0, 80, 0, 28)
+    kickBtn.Position = UDim2.new(0, 10, 0, 110)
+    kickBtn.BackgroundColor3 = self.theme.ConfirmBtn
+    kickBtn.Text = "踢出"
+    kickBtn.TextColor3 = Color3.new(1, 1, 1)
+    kickBtn.Font = Enum.Font.SourceSansBold
+    kickBtn.TextSize = 14
+    local kickCorner = Instance.new("UICorner")
+    kickCorner.CornerRadius = UDim.new(0, 6)
+    kickCorner.Parent = kickBtn
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Parent = panel
+    closeBtn.Size = UDim2.new(0, 22, 0, 22)
+    closeBtn.Position = UDim2.new(1, -26, 0, 6)
+    closeBtn.BackgroundColor3 = self.theme.CloseBtn
+    closeBtn.Text = "X"
+    closeBtn.TextSize = 12
+    closeBtn.Font = Enum.Font.SourceSansBold
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 4)
+    closeCorner.Parent = closeBtn
+    closeBtn.MouseButton1Click:Connect(function() tweenPanelClose(panel) end)
+    kickBtn.MouseButton1Click:Connect(function()
+        local targetName = inputBox.Text
+        if targetName == "" then
+            if config.OnError then config.OnError("请输入玩家名称") end
+            return
+        end
+        if config.OnKick then config.OnKick(targetName, reasonBox.Text) end
+    end)
+    return panel
+end
+
+function Page:AddKickPanel(config)
+    config = config or {}
+    local panel = nil
+    local panelOpen = false
+    local text = config.Text or "自定义踢出"
+    local targetSize = UDim2.new(0, 260, 0, 150)
+    local targetPos = UDim2.new(0.5, -130, 0.5, -75)
+    local btn = self:AddButton({
+        Text = text,
+        Callback = function()
+            if not panel then
+                panel = self:CreateKickPanel(config)
+                panel.Size = targetSize
+                panel.Position = targetPos
+            end
+            if panelOpen and not panel.Visible then
+                panelOpen = false
+            end
+            if not panelOpen then
+                tweenPanelOpen(panel, targetSize, targetPos)
+                panelOpen = true
+            else
+                tweenPanelClose(panel)
+                panelOpen = false
+            end
+        end
+    })
+    return btn
+end
+
+function Page:CreateCustomPopup(config)
+    local mainFrame = self:GetMain()
+    local panel = Instance.new("Frame")
+    panel.Name = "CustomPopup"
+    panel.Parent = mainFrame
+    panel.BackgroundColor3 = self.theme.PanelBg
+    panel.BackgroundTransparency = 0.2
+    panel.Visible = false
+    panel.ZIndex = 200
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = panel
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 1.5
+    stroke.Color = self.theme.PanelStroke
+    stroke.Parent = panel
+    local title = Instance.new("TextLabel")
+    title.Parent = panel
+    title.Size = UDim2.new(1, 0, 0, 25)
+    title.Position = UDim2.new(0, 10, 0, 8)
+    title.BackgroundTransparency = 1
+    title.Text = config.Title or "提示"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.Font = Enum.Font.SourceSansBold
+    title.TextSize = 16
+    local msgLabel = Instance.new("TextLabel")
+    msgLabel.Parent = panel
+    msgLabel.Size = UDim2.new(1, -20, 0, 50)
+    msgLabel.Position = UDim2.new(0, 10, 0, 35)
+    msgLabel.BackgroundTransparency = 1
+    msgLabel.Text = config.Message or ""
+    msgLabel.TextColor3 = Color3.new(1, 1, 1)
+    msgLabel.Font = Enum.Font.SourceSans
+    msgLabel.TextSize = 14
+    msgLabel.TextWrapped = true
+    local confirmBtn = Instance.new("TextButton")
+    confirmBtn.Parent = panel
+    confirmBtn.Size = UDim2.new(0, 100, 0, 28)
+    confirmBtn.Position = UDim2.new(0.5, -50, 0, 95)
+    confirmBtn.BackgroundColor3 = self.theme.ConfirmBtn
+    confirmBtn.Text = "确定"
+    confirmBtn.TextColor3 = Color3.new(1, 1, 1)
+    confirmBtn.Font = Enum.Font.SourceSansBold
+    confirmBtn.TextSize = 14
+    local confirmCorner = Instance.new("UICorner")
+    confirmCorner.CornerRadius = UDim.new(0, 6)
+    confirmCorner.Parent = confirmBtn
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Parent = panel
+    closeBtn.Size = UDim2.new(0, 22, 0, 22)
+    closeBtn.Position = UDim2.new(1, -26, 0, 6)
+    closeBtn.BackgroundColor3 = self.theme.CloseBtn
+    closeBtn.Text = "X"
+    closeBtn.TextSize = 12
+    closeBtn.Font = Enum.Font.SourceSansBold
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 4)
+    closeCorner.Parent = closeBtn
+    closeBtn.MouseButton1Click:Connect(function() tweenPanelClose(panel) end)
+    confirmBtn.MouseButton1Click:Connect(function()
+        if config.OnConfirm then config.OnConfirm() end
+        tweenPanelClose(panel)
+    end)
+    return panel
+end
+
+function Page:AddCustomPopup(config)
+    config = config or {}
+    local panel = nil
+    local panelOpen = false
+    local text = config.Text or "自定义弹窗"
+    local targetSize = UDim2.new(0, 260, 0, 140)
+    local targetPos = UDim2.new(0.5, -130, 0.5, -70)
+    local btn = self:AddButton({
+        Text = text,
+        Callback = function()
+            if not panel then
+                panel = self:CreateCustomPopup(config)
+                panel.Size = targetSize
+                panel.Position = targetPos
+            end
+            if panelOpen and not panel.Visible then
+                panelOpen = false
             end
             if not panelOpen then
                 tweenPanelOpen(panel, targetSize, targetPos)
@@ -1812,7 +2012,7 @@ function UILibrary:CreateWindow(config)
     BeanBack.Parent = Main
     BeanBack.BackgroundTransparency = 1
     BeanBack.Size = UDim2.new(1, 0, 1, 0)
-    BeanBack.ZIndex = 1
+    BeanBack.ZIndex = 250
     local Line = Instance.new("Frame")
     Line.Parent = Main
     Line.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -1834,14 +2034,6 @@ function UILibrary:CreateWindow(config)
     ContentArea.Position = UDim2.new(0.3, 12, 0, 40)
     ContentArea.ZIndex = 20
     ContentArea.ClipsDescendants = true
-    local ScrollingFrame = Instance.new("ScrollingFrame")
-    ScrollingFrame.Parent = ContentArea
-    ScrollingFrame.BackgroundTransparency = 1
-    ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
-    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 200)
-    ScrollingFrame.ScrollBarThickness = 6
-    ScrollingFrame.BorderSizePixel = 0
-    ScrollingFrame.ZIndex = 20
     local TopBar = Instance.new("Frame")
     TopBar.Name = "TopBar"
     TopBar.Parent = Main
@@ -2009,7 +2201,7 @@ function UILibrary:CreateWindow(config)
         label.Text = GetRandomBean()
         label.TextSize = 18
         label.Font = Enum.Font.Unknown
-        label.ZIndex = 1
+        label.ZIndex = 250
         local x = math.random(0, math.max(Main.AbsoluteSize.X - 22, 50))
         label.Position = UDim2.new(0, x, 0, -22)
         local speed = math.random(30, 50)
@@ -2038,11 +2230,15 @@ function UILibrary:CreateWindow(config)
     end)
     Main:GetPropertyChangedSignal("Visible"):Connect(function()
         beanPaused = not Main.Visible
+        for _, child in ipairs(BeanBack:GetChildren()) do
+            if child:IsA("TextLabel") then
+                child.Visible = Main.Visible
+            end
+        end
     end)
     local window = {
         ScreenGui = ScreenGui,
         Main = Main,
-        ScrollingFrame = ScrollingFrame,
         CategoryArea = CategoryArea,
         ContentArea = ContentArea,
         Pages = {},
@@ -2064,9 +2260,23 @@ function UILibrary:CreateWindow(config)
         cat.AutoButtonColor = false
         cat.ZIndex = 21
         cat.Font = Enum.Font.SourceSansBold
-        local page = Page.new(self.ScrollingFrame, self.Theme)
+
+        local pageScroll = Instance.new("ScrollingFrame")
+        pageScroll.Name = "Scroll_" .. name
+        pageScroll.Parent = self.ContentArea
+        pageScroll.BackgroundTransparency = 1
+        pageScroll.Size = UDim2.new(1, 0, 1, 0)
+        pageScroll.CanvasSize = UDim2.new(0, 0, 0, 200)
+        pageScroll.ScrollBarThickness = 6
+        pageScroll.BorderSizePixel = 0
+        pageScroll.ZIndex = 20
+        pageScroll.Visible = false
+
+        local page = Page.new(pageScroll, self.Theme)
+        page.scrollFrame = pageScroll
         page.frame.Name = "Page" .. name
         self.Pages[name] = page
+
         cat.MouseButton1Click:Connect(function()
             if self.Selected then
                 self.Selected.BackgroundTransparency = 0.8
@@ -2077,6 +2287,7 @@ function UILibrary:CreateWindow(config)
             self.Selected = cat
             for _, p in pairs(self.Pages) do
                 p.frame.Visible = false
+                p.scrollFrame.Visible = false
             end
             for _, child in ipairs(self.Main:GetChildren()) do
                 if child:IsA("Frame") and child.Name:find("Panel") then
@@ -2084,6 +2295,7 @@ function UILibrary:CreateWindow(config)
                 end
             end
             page.frame.Visible = true
+            page.scrollFrame.Visible = true
             page:UpdateCanvas()
         end)
         table.insert(self.Categories, cat)
