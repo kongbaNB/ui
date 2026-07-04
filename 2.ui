@@ -1,0 +1,979 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+function gradient(text, startColor, endColor)
+    local result = ""
+    local length = #text
+    for i = 1, length do
+        local t = (i - 1) / math.max(length - 1, 1)
+        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
+        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
+        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
+        local char = text:sub(i, i)
+        result = result .. "<font color=\"rgb(" .. r ..", " .. g .. ", " .. b .. ")\">" .. char .. "</font>"
+    end
+    return result
+end
+local Confirmed = false
+WindUI:Popup({
+    Title = "欢迎! 弹窗示例",
+    Icon = "rbxassetid://129260712070622",
+    IconThemed = true,
+    Content = "这是一个 " .. gradient("WindUI", Color3.fromHex("#00FF87"), Color3.fromHex("#60EFFF")) .. " 库的示例界面",
+    Buttons = {
+        {
+            Title = "取消",
+            Callback = function() end,
+            Variant = "Secondary",
+        },
+        {
+            Title = "继续",
+            Icon = "arrow-right",
+            Callback = function() Confirmed = true end,
+            Variant = "Primary",
+        }
+    }
+})
+repeat wait() until Confirmed
+local Window = WindUI:CreateWindow({
+    Title = "WindUI 库",
+    Icon = "rbxassetid://129260712070622",
+    IconThemed = true,
+    Author = "示例界面",
+    Folder = "云中心",
+    Size = UDim2.fromOffset(580, 460),
+    Transparent = true,
+    Theme = "Dark",
+    User = {
+        Enabled = true,
+        Callback = function() print("已点击") end,
+        Anonymous = true
+    },
+    SideBarWidth = 200,
+    ScrollBarEnabled = true,
+    KeySystem = {
+        Key = { "1234", "5678" },
+        Note = "示例密钥系统。\n\n密钥是 '1234' 或 '5678'",
+        URL = "获取密钥链接",
+        SaveKey = true,
+    },
+})
+Window:CreateTopbarButton("自定义按钮1", "bird",         function() print("点击了 1!") end,  990)
+Window:CreateTopbarButton("自定义按钮2", "droplet-off",  function() print("点击了 2!") end,  989)
+Window:CreateTopbarButton("自定义按钮3", "battery-plus", function() Window:ToggleFullscreen() end, 988)
+
+Window:EditOpenButton({
+    Title = "打开示例界面",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0,16),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(
+        Color3.fromHex("FF0F7B"),
+        Color3.fromHex("F89B29")
+    ),
+    Draggable = true,
+})
+local Tabs = {}
+do
+    Tabs.ElementsSection = Window:Section({
+        Title = "组件",
+        Opened = true,
+    })
+
+    Tabs.WindowSection = Window:Section({
+        Title = "窗口管理",
+        Icon = "app-window-mac",
+        Opened = true,
+    })
+
+    Tabs.OtherSection = Window:Section({
+        Title = "其他",
+        Opened = true,
+    })
+
+    Tabs.ParagraphTab = Tabs.ElementsSection:Tab({ Title = "文本段落", Icon = "type" })
+    Tabs.ButtonTab = Tabs.ElementsSection:Tab({ Title = "按钮", Icon = "mouse-pointer-2", Desc = "包含各种交互按钮。" })
+    Tabs.CodeTab = Tabs.ElementsSection:Tab({ Title = "代码", Icon = "code", Desc = "显示和管理代码片段。" })
+    Tabs.ColorPickerTab = Tabs.ElementsSection:Tab({ Title = "颜色选择器", Icon = "paintbrush", Desc = "轻松选择和自定义颜色。" })
+    Tabs.DialogTab = Tabs.ElementsSection:Tab({ Title = "对话框", Icon = "message-square", Desc = "对话框" })
+    Tabs.NotificationTab = Tabs.ElementsSection:Tab({ Title = "通知", Icon = "bell", Desc = "配置和查看通知。" })
+    Tabs.ToggleTab = Tabs.ElementsSection:Tab({ Title = "开关", Icon = "toggle-left", Desc = "打开或关闭设置。" })
+    Tabs.SliderTab = Tabs.ElementsSection:Tab({ Title = "滑块", Icon = "sliders-horizontal", Desc = "使用滑块平滑调整数值。" })
+    Tabs.InputTab = Tabs.ElementsSection:Tab({ Title = "输入框", Icon = "keyboard", Desc = "接收文本和数字输入。" })
+    Tabs.KeybindTab = Tabs.ElementsSection:Tab({ Title = "快捷键", Icon = "keyboard-off" })
+    Tabs.DropdownTab = Tabs.ElementsSection:Tab({ Title = "下拉菜单", Icon = "chevrons-up-down", Desc = "从多个选项中选择。" })
+
+    Tabs.WindowTab = Tabs.WindowSection:Tab({
+        Title = "窗口和文件配置",
+        Icon = "settings",
+        Desc = "管理窗口设置和文件配置。",
+        ShowTabTitle = true
+    })
+    Tabs.CreateThemeTab = Tabs.WindowSection:Tab({ Title = "创建主题", Icon = "palette", Desc = "设计并应用自定义主题。" })
+
+    Tabs.LongTab = Tabs.OtherSection:Tab({
+        Title = "长且空的标签页，带自定义图标",
+        Icon = "rbxassetid://129260712070622",
+        IconThemed = true,
+        Desc = "长描述"
+    })
+    Tabs.LockedTab = Tabs.OtherSection:Tab({ Title = "锁定标签页", Icon = "lock", Desc = "此标签页已锁定", Locked = true })
+    Tabs.TabWithoutIcon = Tabs.OtherSection:Tab({ Title = "无图标标签页", ShowTabTitle = true })
+    Tabs.Tests = Tabs.OtherSection:Tab({ Title = "测试", Icon = "https://raw.githubusercontent.com/Footagesus/WindUI/main/docs/ui.png", ShowTabTitle = true })
+
+    Tabs.LastSection = Window:Section({
+        Title = "无标签页分区",
+    })
+
+    Tabs.ConfigTab = Window:Tab({ Title = "配置", Icon = "file-cog" })
+end
+Window:SelectTab(1)
+Tabs.ParagraphTab:Paragraph({
+    Title = "带图片和缩略图的文本段落",
+    Desc = "测试段落",
+    Image = "https://play-lh.googleusercontent.com/7cIIPlWm4m7AGqVpEsIfyL-HW4cQla4ucXnfalMft1TMIYQIlf2vqgmthlZgbNAQoaQ",
+    ImageSize = 42,
+    Thumbnail = "https://tr.rbxcdn.com/180DAY-59af3523ad8898216dbe1043788837bf/768/432/Image/Webp/noFilter",
+    ThumbnailSize = 120
+})
+
+Tabs.ParagraphTab:Paragraph({
+    Title = "带图片、缩略图和按钮的文本段落",
+    Desc = "测试段落",
+    Image = "https://play-lh.googleusercontent.com/7cIIPlWm4m7AGqVpEsIfyL-HW4cQla4ucXnfalMft1TMIYQIlf2vqgmthlZgbNAQoaQ",
+    ImageSize = 42,
+    Thumbnail = "https://tr.rbxcdn.com/180DAY-59af3523ad8898216dbe1043788837bf/768/432/Image/Webp/noFilter",
+    ThumbnailSize = 120,
+    Buttons = {
+        {
+            Title = "按钮 1",
+            Variant = "Primary",
+            Callback = function() print("按钮 1") end,
+            Icon = "bird",
+        },
+        {
+            Title = "按钮 2",
+            Variant = "Primary",
+            Callback = function() print("按钮 2") end,
+            Icon = "bird",
+        },
+        {
+            Title = "按钮 3",
+            Variant = "Primary",
+            Callback = function() print("按钮 3") end,
+            Icon = "bird",
+        },
+    }
+})
+
+Tabs.ParagraphTab:Divider()
+
+for _,i in next, { "Default", "Red", "Orange", "Green", "Blue", "Grey", "White" } do
+    Tabs.ParagraphTab:Paragraph({
+        Title = i,
+        Desc = "带颜色的段落",
+        Image = "bird",
+        Color = i ~= "Default" and i or nil,
+        Buttons = {
+            {
+                Title = "按钮 1",
+                Variant = "Primary",
+                Callback = function() print("按钮 1") end,
+                Icon = "bird",
+            },
+            {
+                Title = "按钮 2",
+                Variant = "Primary",
+                Callback = function() print("按钮 2") end,
+                Icon = "bird",
+            },
+            {
+                Title = "按钮 3",
+                Variant = "Primary",
+                Callback = function() print("按钮 3") end,
+                Icon = "bird",
+            },
+        }
+    })
+end
+
+Tabs.ButtonTab:Button({
+    Title = "点击我",
+    Desc = "这是一个简单按钮",
+    Callback = function() print("按钮已点击!") end
+})
+
+local destroybtn
+destroybtn = Tabs.ButtonTab:Button({
+    Title = "点击销毁我!",
+    Callback = function() destroybtn:Destroy() end,
+})
+
+Tabs.ButtonTab:Button({
+    Title = "提交",
+    Desc = "点击提交",
+    Callback = function() print("已提交!") end,
+})
+
+Tabs.ButtonTab:Button({
+    Title = "设置快捷键为 F",
+    Callback = function() Window:SetToggleKey(Enum.KeyCode.F) end,
+})
+
+Tabs.ButtonTab:Divider()
+
+Tabs.ButtonTab:Button({
+    Title = "锁定按钮",
+    Desc = "此按钮已锁定",
+    Locked = true,
+})
+
+Tabs.CodeTab:Code({
+    Title = "示例代码.luau",
+    Code = [[
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local function factorial(n)
+    if n <= 1 then
+        return 1
+    else
+        return n * factorial(n - 1)
+    end
+end
+local result = factorial(5)
+print("5的阶乘是:", result)
+local playerName = "玩家"
+local score = 100
+if score >= 100 then
+    print(playerName .. " 获得了一个成就!")
+else
+    warn("需要更多积分。")
+end
+local playerStats = {
+    name = "玩家",
+    health = 100,
+    inventory = {"剑", "盾", "药水"}
+}
+for i, item in ipairs(playerStats.inventory) do
+    print("背包中的物品:", item)
+end]],
+})
+
+Tabs.CodeTab:Code({
+    Code = [[print("WindUI 最棒!")]],
+})
+Tabs.ColorPickerTab:Colorpicker({
+    Title = "选择颜色",
+    Default = Color3.fromRGB(255, 0, 0),
+    Callback = function(color) print("选择的颜色: " .. tostring(color)) end
+})
+
+Tabs.ColorPickerTab:Colorpicker({
+    Title = "透明颜色",
+    Default = Color3.fromRGB(0, 0, 255),
+    Transparency = 0,
+    Callback = function(color) print("背景颜色: " .. tostring(color)) end
+})
+
+Tabs.DialogTab:Button({
+    Title = "创建示例对话框",
+    Callback = function()
+        Window:Dialog({
+            Title = "示例对话框",
+            Content = "示例内容。啦啦啦",
+            Icon = "bird",
+            Buttons = {
+                {
+                    Title = "哈哈!",
+                    Icon = "bird",
+                    Variant = "Tertiary",
+                    Callback = function()
+                        print("哈哈")
+                    end,
+                },
+                {
+                    Title = "酷!",
+                    Icon = "bird",
+                    Variant = "Tertiary",
+                    Callback = function()
+                        print("酷")
+                    end,
+                },
+                {
+                    Title = "确定!",
+                    Icon = "bird",
+                    Variant = "Secondary",
+                    Callback = function()
+                        print("确定")
+                    end,
+                },
+                {
+                    Title = "太棒了!",
+                    Icon = "bird",
+                    Variant = "Primary",
+                    Callback = function()
+                        print("太棒了")
+                    end,
+                }
+            }
+        })
+    end,
+})
+
+Tabs.DialogTab:Button({
+    Title = "创建示例对话框 2",
+    Callback = function()
+        Window:Dialog({
+            Title = "示例对话框 2",
+            Content = "示例内容。啦啦啦",
+            Icon = "rbxassetid://129260712070622",
+            Buttons = {
+                {
+                    Title = "确定!",
+                    Variant = "Primary",
+                    Callback = function()
+                        print("确定")
+                    end,
+                },
+            }
+        })
+    end,
+})
+
+Tabs.NotificationTab:Button({
+    Title = "点击获取通知",
+    Callback = function()
+        WindUI:Notify({
+            Title = "通知示例 1",
+            Content = "内容",
+            Duration = 5,
+        })
+    end
+})
+
+Tabs.NotificationTab:Button({
+    Title = "带图标的通知",
+    Callback = function()
+        WindUI:Notify({
+            Title = "通知示例 2",
+            Content = "内容",
+            Icon = "droplet-off",
+            Duration = 5,
+        })
+    end
+})
+
+Tabs.NotificationTab:Button({
+    Title = "带自定义图标的通知",
+    Callback = function()
+        WindUI:Notify({
+            Title = "通知示例 2",
+            Content = "内容",
+            Icon = "rbxassetid://129260712070622",
+            IconThemed = true,
+            Duration = 5,
+        })
+    end
+})
+
+Tabs.NotificationTab:Button({
+    Title = "带背景图的通知",
+    Callback = function()
+        WindUI:Notify({
+            Title = "通知示例 3",
+            Content = "带背景图",
+            Icon = "image",
+            Duration = 5,
+            Background = "rbxassetid://13511292247"
+        })
+    end
+})
+
+Tabs.ToggleTab:Toggle({
+    Title = "启用功能",
+    Value = true,
+    Callback = function(state) print("功能已启用: " .. tostring(state)) end
+})
+
+Tabs.ToggleTab:Toggle({
+    Title = "激活模式",
+    Value = false,
+    Callback = function(state) print("模式已激活: " .. tostring(state)) end
+})
+
+Tabs.ToggleTab:Toggle({
+    Title = "带图标的开关",
+    Icon = "check",
+    Value = false,
+    Callback = function(state) print("带图标的开关已激活: " .. tostring(state)) end
+})
+
+Tabs.ToggleTab:Toggle({
+    Title = "新开关类型 复选框",
+    Type = "Checkbox",
+    Value = false,
+    Callback = function(state) print("'复选框' 开关已激活: " .. tostring(state)) end
+})
+
+Tabs.ToggleTab:Toggle({
+    Title = "带自定义图标的复选框开关",
+    Icon = "bird",
+    Type = "Checkbox",
+    Value = false,
+     Callback = function(state) print("'带图标的复选框' 开关已激活: " .. tostring(state)) end
+ })
+Tabs.SliderTab:Slider({
+    Title = "音量滑块",
+    Value = {
+        Min = 0,
+        Max = 100,
+        Default = 50,
+    },
+    Callback = function(value) print("音量设置为: " .. value) end
+})
+
+Tabs.SliderTab:Slider({
+    Title = "亮度滑块",
+    Value = {
+        Min = 1,
+        Max = 100,
+        Default = 75,
+    },
+    Callback = function(value) print("亮度设置为: " .. value) end
+})
+
+Tabs.SliderTab:Slider({
+    Title = "浮点滑块",
+    Step = 0.1,
+    Value = {
+        Min = 0,
+        Max = 2.5,
+        Default = 1.5,
+    },
+    Callback = function(value) print("亮度设置为: " .. value) end
+})
+
+Tabs.InputTab:Input({
+    Title = "用户名",
+    Value = "访客",
+    Placeholder = "输入你的用户名",
+    Callback = function(input) print("用户名: " .. input) end
+})
+
+Tabs.InputTab:Input({
+    Title = "密码",
+    Value = "",
+    Placeholder = "输入你的密码",
+    Callback = function(input) print("密码已输入。") end
+})
+
+Tabs.InputTab:Input({
+    Title = "带图标的输入框",
+    Value = "测试文本",
+    InputIcon = "bird",
+    Placeholder = "输入测试文本",
+    Callback = function(input) print("测试文本已输入。") end
+})
+
+Tabs.InputTab:Input({
+    Title = "评论",
+    Value = "",
+    Type = "Textarea",
+    Placeholder = "留下评论",
+    Callback = function(input)
+        print("评论已输入: " .. input)
+    end
+})
+
+Tabs.InputTab:Input({
+    Title = "带图标的评论",
+    Desc = "嗯...",
+    Value = "测试文本",
+    InputIcon = "bird",
+    Type = "Textarea",
+    Placeholder = "输入测试内容",
+    Callback = function(input)
+        print("测试内容已输入: " .. input)
+    end
+})
+
+Tabs.KeybindTab:Keybind({
+    Title = "快捷键示例",
+    Desc = "打开界面的快捷键",
+    Value = "G",
+    Callback = function(v)
+        Window:SetToggleKey(Enum.KeyCode[v])
+    end
+})
+
+Tabs.DropdownTab:Dropdown({
+    Title = "选择一个选项",
+    Values = { "选项 1", "选项 2", "选项 3" },
+    Value = "选项 1",
+    Callback = function(option) print("已选择: " .. option) end
+})
+
+Tabs.DropdownTab:Dropdown({
+    Title = "选择分类 (多选)",
+    Values = { "分类 A", "分类 B", "分类 C" },
+    Value = { "分类 A" },
+    Multi = true,
+    AllowNone = true,
+    Callback = function(option)
+        print("已选择的分类: " .. game:GetService("HttpService"):JSONEncode(option))
+    end
+})
+
+Tabs.DropdownTab:Dropdown({
+    Title = "大下拉菜单",
+    Values = { "超长长长长长长标签页",
+               "你好",
+               "你好",
+               "你好",
+               "你好",
+               "你好",
+               "你好",
+               "你好",
+               "你好",
+               "你好",
+             },
+    Multi = true,
+    AllowNone = true,
+    Callback = function(option)
+        print("测试已选择: " .. game:GetService("HttpService"):JSONEncode(option))
+    end
+})
+local HttpService = game:GetService("HttpService")
+local folderPath = "WindUI"
+makefolder(folderPath)
+local function SaveFile(fileName, data)
+    local filePath = folderPath .. "/" .. fileName .. ".json"
+    local jsonData = HttpService:JSONEncode(data)
+    writefile(filePath, jsonData)
+end
+local function LoadFile(fileName)
+    local filePath = folderPath .. "/" .. fileName .. ".json"
+    if isfile(filePath) then
+        local jsonData = readfile(filePath)
+        return HttpService:JSONDecode(jsonData)
+    end
+end
+local function ListFiles()
+    local files = {}
+    for _, file in ipairs(listfiles(folderPath)) do
+        local fileName = file:match("([^/]+)%.json$")
+        if fileName then
+            table.insert(files, fileName)
+        end
+    end
+    return files
+end
+
+Tabs.WindowTab:Section({ Title = "窗口", Icon = "app-window-mac" })
+
+local themeValues = {}
+for name, _ in pairs(WindUI:GetThemes()) do
+    table.insert(themeValues, name)
+end
+local themeDropdown = Tabs.WindowTab:Dropdown({
+    Title = "选择主题",
+    Multi = false,
+    AllowNone = false,
+    Value = nil,
+    Values = themeValues,
+    Callback = function(theme)
+        WindUI:SetTheme(theme)
+    end
+})
+themeDropdown:Select(WindUI:GetCurrentTheme())
+
+local ToggleTransparency = Tabs.WindowTab:Toggle({
+    Title = "切换窗口透明度",
+    Callback = function(e)
+        Window:ToggleTransparency(e)
+    end,
+    Value = WindUI:GetTransparency()
+})
+
+Tabs.WindowTab:Section({ Title = "保存" })
+local fileNameInput = ""
+Tabs.WindowTab:Input({
+    Title = "输入文件名",
+    PlaceholderText = "输入文件名",
+    Callback = function(text)
+        fileNameInput = text
+    end
+})
+Tabs.WindowTab:Button({
+    Title = "保存文件",
+    Callback = function()
+        if fileNameInput ~= "" then
+            SaveFile(fileNameInput, { Transparent = WindUI:GetTransparency(), Theme = WindUI:GetCurrentTheme() })
+        end
+    end
+})
+
+Tabs.WindowTab:Section({ Title = "加载" })
+local filesDropdown
+local files = ListFiles()
+filesDropdown = Tabs.WindowTab:Dropdown({
+    Title = "选择文件",
+    Multi = false,
+    AllowNone = true,
+    Values = files,
+    Callback = function(selectedFile)
+        fileNameInput = selectedFile
+    end
+})
+Tabs.WindowTab:Button({
+    Title = "加载文件",
+    Callback = function()
+        if fileNameInput ~= "" then
+            local data = LoadFile(fileNameInput)
+            if data then
+                WindUI:Notify({
+                    Title = "文件已加载",
+                    Content = "加载的数据: " .. HttpService:JSONEncode(data),
+                    Duration = 5,
+                })
+                if data.Transparent then
+                    Window:ToggleTransparency(data.Transparent)
+                    ToggleTransparency:SetValue(data.Transparent)
+                end
+                if data.Theme then WindUI:SetTheme(data.Theme) end
+            end
+        end
+    end
+})
+
+Tabs.WindowTab:Button({
+    Title = "覆盖文件",
+    Callback = function()
+        if fileNameInput ~= "" then
+            SaveFile(fileNameInput, { Transparent = WindUI:GetTransparency(), Theme = WindUI:GetCurrentTheme() })
+        end
+    end
+})
+
+Tabs.WindowTab:Button({
+    Title = "刷新列表",
+    Callback = function()
+        filesDropdown:Refresh(ListFiles())
+    end
+})
+
+local currentThemeName = WindUI:GetCurrentTheme()
+local themes = WindUI:GetThemes()
+local ThemeAccent = themes[currentThemeName].Accent
+local ThemeOutline = themes[currentThemeName].Outline
+local ThemeText = themes[currentThemeName].Text
+local ThemePlaceholderText = themes[currentThemeName].Placeholder
+
+function updateTheme()
+    WindUI:AddTheme({
+        Name = currentThemeName,
+        Accent = ThemeAccent,
+        Outline = ThemeOutline,
+        Text = ThemeText,
+        Placeholder = ThemePlaceholderText
+    })
+    WindUI:SetTheme(currentThemeName)
+end
+
+local CreateInput = Tabs.CreateThemeTab:Input({
+    Title = "主题名称",
+    Value = currentThemeName,
+    Callback = function(name)
+        currentThemeName = name
+    end
+})
+
+Tabs.CreateThemeTab:Colorpicker({
+    Title = "背景颜色",
+    Default = Color3.fromHex(ThemeAccent),
+    Callback = function(color)
+        ThemeAccent = color:ToHex()
+    end
+})
+
+ Tabs.CreateThemeTab:Colorpicker({
+     Title = "轮廓颜色",
+     Default = Color3.fromHex(ThemeOutline),
+     Callback = function(color)
+         ThemeOutline = color:ToHex()
+     end
+ })
+ Tabs.CreateThemeTab:Colorpicker({
+     Title = "文字颜色",
+     Default = Color3.fromHex(ThemeText),
+     Callback = function(color)
+         ThemeText = color:ToHex()
+     end
+ })
+ Tabs.CreateThemeTab:Colorpicker({
+     Title = "占位文字颜色",
+     Default = Color3.fromHex(ThemePlaceholderText),
+     Callback = function(color)
+         ThemePlaceholderText = color:ToHex()
+     end
+ })
+ Tabs.CreateThemeTab:Button({
+     Title = "更新主题",
+     Callback = function()
+         updateTheme()
+     end
+ })
+local InviteCode = "ApbHXtAwU2"
+local DiscordAPI = "https://discord.com/api/v10/invites/" .. InviteCode .. "?with_counts=true&with_expiration=true"
+local Response = game:GetService("HttpService"):JSONDecode(WindUI.Creator.Request({
+    Url = DiscordAPI,
+    Method = "GET",
+    Headers = {
+        ["User-Agent"] = "RobloxBot/1.0",
+        ["Accept"] = "application/json"
+    }
+}).Body)
+if Response and Response.guild then
+    local DiscordInfo = Tabs.Tests:Paragraph({
+        Title = Response.guild.name,
+        Desc =
+            ' <font color="#52525b">•</font> Member Count : ' .. tostring(Response.approximate_member_count) ..
+            '\n <font color="#16a34a">•</font> Online Count : ' .. tostring(Response.approximate_presence_count)
+        ,
+        Image = "https://cdn.discordapp.com/icons/" .. Response.guild.id .. "/" .. Response.guild.icon .. ".png?size=1024",
+        ImageSize = 42,
+    })
+    Tabs.Tests:Button({
+        Title = "更新信息",
+        Callback = function()
+            local UpdatedResponse = game:GetService("HttpService"):JSONDecode(WindUI.Creator.Request({
+                Url = DiscordAPI,
+                Method = "GET",
+            }).Body)
+
+            if UpdatedResponse and UpdatedResponse and UpdatedResponse.guild then
+                DiscordInfo:SetDesc(
+                    ' <font color="#52525b">•</font> Member Count : ' .. tostring(UpdatedResponse.approximate_member_count) ..
+                    '\n <font color="#16a34a">•</font> Online Count : ' .. tostring(UpdatedResponse.approximate_presence_count)
+                )
+            end
+        end
+    })
+else
+    Tabs.Tests:Paragraph({
+        Title = "获取Discord服务器信息时出错",
+        Desc = game:GetService("HttpService"):JSONEncode(Response),
+        Image = "triangle-alert",
+        ImageSize = 26,
+        Color = "Red",
+    })
+end
+local function parseJSON(luau_table, indent, level, visited)
+    indent = indent or 2
+    level = level or 0
+    visited = visited or {}
+
+    local currentIndent = string.rep(" ", level * indent)
+    local nextIndent = string.rep(" ", (level + 1) * indent)
+
+    if luau_table == nil then
+        return "null"
+    end
+
+    local dataType = type(luau_table)
+
+    if dataType == "table" then
+        if visited[luau_table] then
+            return "\"[Circular Reference]\""
+        end
+
+        visited[luau_table] = true
+
+        local isArray = true
+        local maxIndex = 0
+
+        for k, _ in pairs(luau_table) do
+            if type(k) == "number" and k > maxIndex then
+                maxIndex = k
+            end
+            if type(k) ~= "number" or k <= 0 or math.floor(k) ~= k then
+                isArray = false
+                break
+            end
+        end
+
+        local count = 0
+        for _ in pairs(luau_table) do
+            count = count + 1
+        end
+        if count ~= maxIndex and isArray then
+            isArray = false
+        end
+
+        if count == 0 then
+            return "{}"
+        end
+
+        if isArray then
+            if count == 0 then
+                return "[]"
+            end
+
+            local result = "[\n"
+
+            for i = 1, maxIndex do
+                result = result .. nextIndent .. parseJSON(luau_table[i], indent, level + 1, visited)
+                if i < maxIndex then
+                    result = result .. ","
+                end
+                result = result .. "\n"
+            end
+
+            result = result .. currentIndent .. "]"
+            return result
+        else
+            local result = "{\n"
+            local first = true
+
+            local keys = {}
+            for k in pairs(luau_table) do
+                table.insert(keys, k)
+            end
+            table.sort(keys, function(a, b)
+                if type(a) == type(b) then
+                    return tostring(a) < tostring(b)
+                else
+                    return type(a) < type(b)
+                end
+            end)
+
+            for _, k in ipairs(keys) do
+                local v = luau_table[k]
+                if not first then
+                    result = result .. ",\n"
+                else
+                    first = false
+                end
+
+                if type(k) == "string" then
+                    result = result .. nextIndent .. "\"" .. k .. "\": "
+                else
+                    result = result .. nextIndent .. "\"" .. tostring(k) .. "\": "
+                end
+
+                result = result .. parseJSON(v, indent, level + 1, visited)
+            end
+
+            result = result .. "\n" .. currentIndent .. "}"
+            return result
+        end
+    elseif dataType == "string" then
+        local escaped = luau_table:gsub("\\", "\\\\")
+        escaped = escaped:gsub("\"", "\\\"")
+        escaped = escaped:gsub("\n", "\\n")
+        escaped = escaped:gsub("\r", "\\r")
+        escaped = escaped:gsub("\t", "\\t")
+
+        return "\"" .. escaped .. "\""
+    elseif dataType == "number" then
+        return tostring(luau_table)
+    elseif dataType == "boolean" then
+        return luau_table and "true" or "false"
+    elseif dataType == "function" then
+        return "\"function\""
+    else
+        return "\"" .. dataType .. "\""
+    end
+end
+
+local function tableToClipboard(luau_table, indent)
+    indent = indent or 4
+    local jsonString = parseJSON(luau_table, indent)
+    setclipboard(jsonString)
+    return jsonString
+end
+
+Tabs.Tests:Section({
+    Title = "获取 WindUI JSON"
+})
+Tabs.Tests:Button({
+    Title = "获取 WindUI JSON",
+    Callback = function()
+        tableToClipboard(WindUI)
+    end
+})
+local ToggleElement = Tabs.ConfigTab:Toggle({
+    Title = "开关",
+    Desc = "配置测试开关",
+    Callback = function(v) print("开关已更改: " .. tostring(v)) end
+})
+local SliderElement = Tabs.ConfigTab:Slider({
+    Title = "滑块",
+    Desc = "配置测试滑块",
+    Value = {
+        Min = 0,
+        Max = 100,
+        Default = 50,
+    },
+    Callback = function(v) print("滑块已更改: " .. v) end
+})
+local KeybindElement = Tabs.ConfigTab:Keybind({
+    Title = "快捷键",
+    Desc = "配置测试快捷键",
+    Value = "F",
+    Callback = function(v) print("快捷键已更改/点击: " .. v) end
+})
+local DropdownElement = Tabs.ConfigTab:Dropdown({
+    Title = "下拉菜单",
+    Desc = "配置测试下拉菜单",
+    Values = { "测试 1", "测试 2" },
+    Value = "测试 1",
+    Callback = function(v) print("下拉菜单已更改: " .. game:GetService("HttpService"):JSONEncode(v)) end
+})
+local InputElement = Tabs.ConfigTab:Input({
+    Title = "输入框",
+    Desc = "配置测试输入框",
+    Value = "Test",
+    Placeholder = "输入文本.......",
+    Callback = function(v) print("输入框已更改: " .. v) end
+})
+local ColorpickerElement = Tabs.ConfigTab:Colorpicker({
+    Title = "颜色选择器",
+    Desc = "配置测试颜色选择器",
+    Default = Color3.fromHex("#315dff"),
+    Transparency = 0,
+    Callback = function(c,t) print("颜色选择器已更改: " .. c:ToHex() .. "\n透明度: " .. t) end
+})
+
+local ConfigManager = Window.ConfigManager
+local myConfig = ConfigManager:CreateConfig("myConfig")
+myConfig:Register( "toggleNameExample",          ToggleElement      )
+myConfig:Register( "sliderNameExample",          SliderElement      )
+myConfig:Register( "keybindNameExample",         KeybindElement     )
+myConfig:Register( "dropdownNameExample",        DropdownElement    )
+myConfig:Register( "inputNameExample",           InputElement       )
+myConfig:Register( "ColorpickerNameExample",     ColorpickerElement )
+
+Tabs.ConfigTab:Button({
+    Title = "保存",
+    Desc = "将组件保存到配置",
+    Callback = function()
+        myConfig:Save()
+    end
+})
+Tabs.ConfigTab:Button({
+    Title = "加载",
+    Desc = "从配置加载组件",
+    Callback = function()
+        myConfig:Load()
+    end
+})
+Tabs.ConfigTab:Button({
+    Title = "打印所有配置",
+    Callback = function()
+        print(game:GetService("HttpService"):JSONEncode(ConfigManager:AllConfigs()))
+    end
+})
+
+Window:OnClose(function()
+    print("界面已关闭。")
+end)
