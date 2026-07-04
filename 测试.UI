@@ -2012,7 +2012,7 @@ function UILibrary:CreateWindow(config)
     BeanBack.Parent = Main
     BeanBack.BackgroundTransparency = 1
     BeanBack.Size = UDim2.new(1, 0, 1, 0)
-    BeanBack.ZIndex = 250
+    BeanBack.ZIndex = 1
     local Line = Instance.new("Frame")
     Line.Parent = Main
     Line.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -2201,7 +2201,7 @@ function UILibrary:CreateWindow(config)
         label.Text = GetRandomBean()
         label.TextSize = 18
         label.Font = Enum.Font.Unknown
-        label.ZIndex = 250
+        label.ZIndex = 1
         local x = math.random(0, math.max(Main.AbsoluteSize.X - 22, 50))
         label.Position = UDim2.new(0, x, 0, -22)
         local speed = math.random(30, 50)
