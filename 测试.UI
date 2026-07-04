@@ -2230,11 +2230,6 @@ function UILibrary:CreateWindow(config)
     end)
     Main:GetPropertyChangedSignal("Visible"):Connect(function()
         beanPaused = not Main.Visible
-        for _, child in ipairs(BeanBack:GetChildren()) do
-            if child:IsA("TextLabel") then
-                child.Visible = Main.Visible
-            end
-        end
     end)
     local window = {
         ScreenGui = ScreenGui,
