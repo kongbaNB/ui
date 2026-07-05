@@ -2136,8 +2136,12 @@ function UILibrary:CreateWindow(config)
             BackgroundTransparency = 0
         })
         openTween:Play()
+        openTween.Completed:Connect(function()
+            beanPaused = false
+        end)
     end
     local function animateMainClose()
+        beanPaused = true
         local closeTween = TweenService:Create(Main, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
             Size = UDim2.new(0, 0, 0, 0),
             Position = getToggleCenter(),
@@ -2213,7 +2217,7 @@ function UILibrary:CreateWindow(config)
             if beanPaused then return end
             alpha += dt
             local newY = alpha * speed - 22
-            if newY > Main.AbsoluteSize.Y then conn:Disconnect() label:Destroy() return end
+            if newY > 280 then conn:Disconnect() label:Destroy() return end
             label.Position = UDim2.new(0, x + math.sin(alpha * 1.2) * drift, 0, newY)
         end)
     end
@@ -2228,9 +2232,7 @@ function UILibrary:CreateWindow(config)
             end
         end
     end)
-    Main:GetPropertyChangedSignal("Visible"):Connect(function()
-        beanPaused = not Main.Visible
-    end)
+    -- beanPaused 现在由 animateMainOpen/animateMainClose 手动控制
     local window = {
         ScreenGui = ScreenGui,
         Main = Main,
@@ -2280,6 +2282,11 @@ function UILibrary:CreateWindow(config)
             cat.BackgroundTransparency = 0.5
             cat.BackgroundColor3 = self.Theme.CatActive
             self.Selected = cat
+            for _, child in ipairs(self.ContentArea:GetChildren()) do
+                if child:IsA("ScrollingFrame") then
+                    child.Visible = false
+                end
+            end
             for _, p in pairs(self.Pages) do
                 p.frame.Visible = false
                 p.scrollFrame.Visible = false
