@@ -134,6 +134,7 @@ function Page:AddButton(config)
     btn.TextColor3 = config.TextColor or self.theme.ButtonText
     btn.TextSize = config.TextSize or 14
     btn.AutoButtonColor = false
+    btn.Active = true
     btn.ZIndex = 21
     btn.Font = Enum.Font.SourceSansBold
     local corner = Instance.new("UICorner")
@@ -141,16 +142,6 @@ function Page:AddButton(config)
     corner.Parent = btn
     local originalSize = size
     btn.MouseButton1Click:Connect(function()
-        local tweenDown = TweenService:Create(btn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset * 0.92, originalSize.Y.Scale, originalSize.Y.Offset * 0.92)
-        })
-        tweenDown:Play()
-        tweenDown.Completed:Connect(function()
-            local tweenUp = TweenService:Create(btn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Size = originalSize
-            })
-            tweenUp:Play()
-        end)
         if config.Callback then
             config.Callback()
         end
@@ -2213,7 +2204,7 @@ function UILibrary:CreateWindow(config)
             if beanPaused then return end
             alpha += dt
             local newY = alpha * speed - 22
-            if newY > Main.AbsoluteSize.Y then conn:Disconnect() label:Destroy() return end
+            if newY > 280 then conn:Disconnect() label:Destroy() return end
             label.Position = UDim2.new(0, x + math.sin(alpha * 1.2) * drift, 0, newY)
         end)
     end
