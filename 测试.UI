@@ -88,30 +88,6 @@ local function LockButtonPosition(btn, initPos)
     return conn
 end
 
-local function playButtonClickAnimation(btn, initPos, lockConn)
-    if not btn or not btn.Parent then return end
-    local originalSize = btn.Size
-    local originalPos = initPos
-
-    if lockConn then lockConn:Disconnect() end
-
-    local tweenDown = TweenService:Create(btn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset * 0.9, originalSize.Y.Scale, originalSize.Y.Offset * 0.9),
-        Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset, originalPos.Y.Scale, originalPos.Y.Offset - 3)
-    })
-    tweenDown:Play()
-    tweenDown.Completed:Connect(function()
-        local tweenUp = TweenService:Create(btn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = originalSize,
-            Position = originalPos
-        })
-        tweenUp:Play()
-        tweenUp.Completed:Connect(function()
-            lockConn = LockButtonPosition(btn, originalPos)
-        end)
-    end)
-end
-
 local Page = {}
 Page.__index = Page
 
@@ -181,13 +157,33 @@ function Page:AddButton(config)
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = btn
+
     local lockConn = LockButtonPosition(btn, pos)
+
     btn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(btn, pos, lockConn)
+        if lockConn then lockConn:Disconnect() end
+        local originalSize = btn.Size
+        local tweenDown = TweenService:Create(btn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset * 0.9, originalSize.Y.Scale, originalSize.Y.Offset * 0.9),
+            Position = UDim2.new(pos.X.Scale, pos.X.Offset, pos.Y.Scale, pos.Y.Offset - 3)
+        })
+        tweenDown:Play()
+        tweenDown.Completed:Connect(function()
+            local tweenUp = TweenService:Create(btn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = originalSize,
+                Position = pos
+            })
+            tweenUp:Play()
+            tweenUp.Completed:Connect(function()
+                lockConn = LockButtonPosition(btn, pos)
+            end)
+        end)
+
         if config.Callback then
             config.Callback()
         end
     end)
+
     self:UpdateCanvas()
     return btn
 end
@@ -338,7 +334,24 @@ function Page:CreateSliderPanel(config, minVal, maxVal, defaultVal, currentVal, 
     confirmCorner.Parent = confirmBtn
     local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
     confirmBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
+        if confirmLockConn then confirmLockConn:Disconnect() end
+        local origSize = confirmBtn.Size
+        local origPos = confirmBtn.Position
+        local td = TweenService:Create(confirmBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(confirmBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                confirmLockConn = LockButtonPosition(confirmBtn, origPos)
+            end)
+        end)
         local num = tonumber(inputBox.Text)
         if num then setVal(num) end
         tweenPanelClose(panel)
@@ -357,7 +370,24 @@ function Page:CreateSliderPanel(config, minVal, maxVal, defaultVal, currentVal, 
     resetCorner.Parent = resetBtn
     local resetLockConn = LockButtonPosition(resetBtn, resetBtn.Position)
     resetBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(resetBtn, resetBtn.Position, resetLockConn)
+        if resetLockConn then resetLockConn:Disconnect() end
+        local origSize = resetBtn.Size
+        local origPos = resetBtn.Position
+        local td = TweenService:Create(resetBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(resetBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                resetLockConn = LockButtonPosition(resetBtn, origPos)
+            end)
+        end)
         setVal(defaultVal)
         tweenPanelClose(panel)
     end)
@@ -374,7 +404,24 @@ function Page:CreateSliderPanel(config, minVal, maxVal, defaultVal, currentVal, 
     closeCorner.Parent = closeBtn
     local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        if closeLockConn then closeLockConn:Disconnect() end
+        local origSize = closeBtn.Size
+        local origPos = closeBtn.Position
+        local td = TweenService:Create(closeBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(closeBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                closeLockConn = LockButtonPosition(closeBtn, origPos)
+            end)
+        end)
         tweenPanelClose(panel)
     end)
     local dragging = false
@@ -471,7 +518,24 @@ function Page:ShowPlayerSelect(onSelect)
             pCorner.Parent = pBtn
             local pLockConn = LockButtonPosition(pBtn, pBtn.Position)
             pBtn.MouseButton1Click:Connect(function()
-                playButtonClickAnimation(pBtn, pBtn.Position, pLockConn)
+                if pLockConn then pLockConn:Disconnect() end
+                local origSize = pBtn.Size
+                local origPos = pBtn.Position
+                local td = TweenService:Create(pBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+                    Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+                })
+                td:Play()
+                td.Completed:Connect(function()
+                    local tu = TweenService:Create(pBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                        Size = origSize,
+                        Position = origPos
+                    })
+                    tu:Play()
+                    tu.Completed:Connect(function()
+                        pLockConn = LockButtonPosition(pBtn, origPos)
+                    end)
+                end)
                 if onSelect then onSelect(p) end
                 local closeTween = TweenService:Create(bg, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
                 closeTween:Play()
@@ -495,7 +559,24 @@ function Page:ShowPlayerSelect(onSelect)
     cancelCorner.Parent = cancelBtn
     local cancelLockConn = LockButtonPosition(cancelBtn, cancelBtn.Position)
     cancelBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(cancelBtn, cancelBtn.Position, cancelLockConn)
+        if cancelLockConn then cancelLockConn:Disconnect() end
+        local origSize = cancelBtn.Size
+        local origPos = cancelBtn.Position
+        local td = TweenService:Create(cancelBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(cancelBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                cancelLockConn = LockButtonPosition(cancelBtn, origPos)
+            end)
+        end)
         local closeTween = TweenService:Create(bg, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
         closeTween:Play()
         closeTween.Completed:Connect(function() selectGui:Destroy() end)
@@ -512,9 +593,26 @@ function Page:ShowPlayerSelect(onSelect)
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
+    local closeLockConn2 = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        if closeLockConn2 then closeLockConn2:Disconnect() end
+        local origSize = closeBtn.Size
+        local origPos = closeBtn.Position
+        local td = TweenService:Create(closeBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(closeBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                closeLockConn2 = LockButtonPosition(closeBtn, origPos)
+            end)
+        end)
         local closeTween = TweenService:Create(bg, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
         closeTween:Play()
         closeTween.Completed:Connect(function() selectGui:Destroy() end)
@@ -614,7 +712,24 @@ function Page:CreateCoordPanel(config)
     closeCorner.Parent = closeBtn
     local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        if closeLockConn then closeLockConn:Disconnect() end
+        local origSize = closeBtn.Size
+        local origPos = closeBtn.Position
+        local td = TweenService:Create(closeBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(closeBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                closeLockConn = LockButtonPosition(closeBtn, origPos)
+            end)
+        end)
         tweenPanelClose(panel)
     end)
     local function parseCoords(str)
@@ -631,7 +746,24 @@ function Page:CreateCoordPanel(config)
         return nil
     end
     teleportBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(teleportBtn, teleportBtn.Position, teleLockConn)
+        if teleLockConn then teleLockConn:Disconnect() end
+        local origSize = teleportBtn.Size
+        local origPos = teleportBtn.Position
+        local td = TweenService:Create(teleportBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(teleportBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                teleLockConn = LockButtonPosition(teleportBtn, origPos)
+            end)
+        end)
         local input = inputBox.Text
         if input == "" or input:match("^%s*$") then
             if config.OnError then config.OnError("请输入坐标") end
@@ -653,7 +785,24 @@ function Page:CreateCoordPanel(config)
         end
     end
     copyBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(copyBtn, copyBtn.Position, copyLockConn)
+        if copyLockConn then copyLockConn:Disconnect() end
+        local origSize = copyBtn.Size
+        local origPos = copyBtn.Position
+        local td = TweenService:Create(copyBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(copyBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                copyLockConn = LockButtonPosition(copyBtn, origPos)
+            end)
+        end)
         if config.GetPosition then
             local pos = config.GetPosition()
             if pos then
@@ -790,7 +939,24 @@ function Page:CreateAimbotPanel(config)
     confirmCorner.Parent = confirmBtn
     local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
     confirmBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
+        if confirmLockConn then confirmLockConn:Disconnect() end
+        local origSize = confirmBtn.Size
+        local origPos = confirmBtn.Position
+        local td = TweenService:Create(confirmBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(confirmBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                confirmLockConn = LockButtonPosition(confirmBtn, origPos)
+            end)
+        end)
         if config.OnChange then config.OnChange(currentRadius) end
         tweenPanelClose(panel)
     end)
@@ -808,7 +974,24 @@ function Page:CreateAimbotPanel(config)
     resetCorner.Parent = resetBtn
     local resetLockConn = LockButtonPosition(resetBtn, resetBtn.Position)
     resetBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(resetBtn, resetBtn.Position, resetLockConn)
+        if resetLockConn then resetLockConn:Disconnect() end
+        local origSize = resetBtn.Size
+        local origPos = resetBtn.Position
+        local td = TweenService:Create(resetBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(resetBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                resetLockConn = LockButtonPosition(resetBtn, origPos)
+            end)
+        end)
         setRadius(defaultRadius)
         if config.OnChange then config.OnChange(defaultRadius) end
         tweenPanelClose(panel)
@@ -826,7 +1009,24 @@ function Page:CreateAimbotPanel(config)
     closeCorner.Parent = closeBtn
     local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        if closeLockConn then closeLockConn:Disconnect() end
+        local origSize = closeBtn.Size
+        local origPos = closeBtn.Position
+        local td = TweenService:Create(closeBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(closeBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                closeLockConn = LockButtonPosition(closeBtn, origPos)
+            end)
+        end)
         tweenPanelClose(panel)
     end)
     local dragging = false
@@ -965,7 +1165,24 @@ function Page:CreateHarassSpeedPanel(config)
     confirmCorner.Parent = confirmBtn
     local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
     confirmBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
+        if confirmLockConn then confirmLockConn:Disconnect() end
+        local origSize = confirmBtn.Size
+        local origPos = confirmBtn.Position
+        local td = TweenService:Create(confirmBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(confirmBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                confirmLockConn = LockButtonPosition(confirmBtn, origPos)
+            end)
+        end)
         if config.OnChange then config.OnChange(currentSpeed) end
         tweenPanelClose(panel)
     end)
@@ -983,7 +1200,24 @@ function Page:CreateHarassSpeedPanel(config)
     resetCorner.Parent = resetBtn
     local resetLockConn = LockButtonPosition(resetBtn, resetBtn.Position)
     resetBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(resetBtn, resetBtn.Position, resetLockConn)
+        if resetLockConn then resetLockConn:Disconnect() end
+        local origSize = resetBtn.Size
+        local origPos = resetBtn.Position
+        local td = TweenService:Create(resetBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(resetBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                resetLockConn = LockButtonPosition(resetBtn, origPos)
+            end)
+        end)
         setSpeed(defaultSpeed)
         if config.OnChange then config.OnChange(defaultSpeed) end
         tweenPanelClose(panel)
@@ -1001,7 +1235,24 @@ function Page:CreateHarassSpeedPanel(config)
     closeCorner.Parent = closeBtn
     local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        if closeLockConn then closeLockConn:Disconnect() end
+        local origSize = closeBtn.Size
+        local origPos = closeBtn.Position
+        local td = TweenService:Create(closeBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(closeBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                closeLockConn = LockButtonPosition(closeBtn, origPos)
+            end)
+        end)
         tweenPanelClose(panel)
     end)
     local dragging = false
@@ -1140,7 +1391,24 @@ function Page:CreateSpinSpeedPanel(config)
     confirmCorner.Parent = confirmBtn
     local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
     confirmBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
+        if confirmLockConn then confirmLockConn:Disconnect() end
+        local origSize = confirmBtn.Size
+        local origPos = confirmBtn.Position
+        local td = TweenService:Create(confirmBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(confirmBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                confirmLockConn = LockButtonPosition(confirmBtn, origPos)
+            end)
+        end)
         if config.OnChange then config.OnChange(currentSpin) end
         tweenPanelClose(panel)
     end)
@@ -1158,7 +1426,24 @@ function Page:CreateSpinSpeedPanel(config)
     resetCorner.Parent = resetBtn
     local resetLockConn = LockButtonPosition(resetBtn, resetBtn.Position)
     resetBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(resetBtn, resetBtn.Position, resetLockConn)
+        if resetLockConn then resetLockConn:Disconnect() end
+        local origSize = resetBtn.Size
+        local origPos = resetBtn.Position
+        local td = TweenService:Create(resetBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(resetBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                resetLockConn = LockButtonPosition(resetBtn, origPos)
+            end)
+        end)
         setSpinSpeed(defaultSpin)
         if config.OnChange then config.OnChange(defaultSpin) end
         tweenPanelClose(panel)
@@ -1176,7 +1461,24 @@ function Page:CreateSpinSpeedPanel(config)
     closeCorner.Parent = closeBtn
     local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        if closeLockConn then closeLockConn:Disconnect() end
+        local origSize = closeBtn.Size
+        local origPos = closeBtn.Position
+        local td = TweenService:Create(closeBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(closeBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                closeLockConn = LockButtonPosition(closeBtn, origPos)
+            end)
+        end)
         tweenPanelClose(panel)
     end)
     local dragging = false
@@ -1313,18 +1615,69 @@ function Page:CreateInstanceIdPanel(config)
     closeCorner.Parent = closeBtn
     local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        if closeLockConn then closeLockConn:Disconnect() end
+        local origSize = closeBtn.Size
+        local origPos = closeBtn.Position
+        local td = TweenService:Create(closeBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(closeBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                closeLockConn = LockButtonPosition(closeBtn, origPos)
+            end)
+        end)
         tweenPanelClose(panel)
     end)
     local function updateIdDisplay()
         idLabel.Text = "ID: " .. game.JobId
     end
     copyBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(copyBtn, copyBtn.Position, copyLockConn)
+        if copyLockConn then copyLockConn:Disconnect() end
+        local origSize = copyBtn.Size
+        local origPos = copyBtn.Position
+        local td = TweenService:Create(copyBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(copyBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                copyLockConn = LockButtonPosition(copyBtn, origPos)
+            end)
+        end)
         if config.OnCopy then config.OnCopy(game.JobId) end
     end)
     saveBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(saveBtn, saveBtn.Position, saveLockConn)
+        if saveLockConn then saveLockConn:Disconnect() end
+        local origSize = saveBtn.Size
+        local origPos = saveBtn.Position
+        local td = TweenService:Create(saveBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(saveBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                saveLockConn = LockButtonPosition(saveBtn, origPos)
+            end)
+        end)
         if config.OnSave then config.OnSave(game.JobId) end
     end)
     panel:GetPropertyChangedSignal("Visible"):Connect(function()
@@ -1427,14 +1780,48 @@ function Page:CreatePlaceIdPanel(config)
     closeCorner.Parent = closeBtn
     local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        if closeLockConn then closeLockConn:Disconnect() end
+        local origSize = closeBtn.Size
+        local origPos = closeBtn.Position
+        local td = TweenService:Create(closeBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(closeBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                closeLockConn = LockButtonPosition(closeBtn, origPos)
+            end)
+        end)
         tweenPanelClose(panel)
     end)
     local function updateIdDisplay()
         idLabel.Text = "ID: " .. game.PlaceId
     end
     copyBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(copyBtn, copyBtn.Position, copyLockConn)
+        if copyLockConn then copyLockConn:Disconnect() end
+        local origSize = copyBtn.Size
+        local origPos = copyBtn.Position
+        local td = TweenService:Create(copyBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(copyBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                copyLockConn = LockButtonPosition(copyBtn, origPos)
+            end)
+        end)
         if config.OnCopy then config.OnCopy(game.PlaceId) end
     end)
     panel:GetPropertyChangedSignal("Visible"):Connect(function()
@@ -1536,11 +1923,45 @@ function Page:CreateTeleportServerPanel(config)
     closeCorner.Parent = closeBtn
     local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        if closeLockConn then closeLockConn:Disconnect() end
+        local origSize = closeBtn.Size
+        local origPos = closeBtn.Position
+        local td = TweenService:Create(closeBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(closeBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                closeLockConn = LockButtonPosition(closeBtn, origPos)
+            end)
+        end)
         tweenPanelClose(panel)
     end)
     teleportBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(teleportBtn, teleportBtn.Position, teleLockConn)
+        if teleLockConn then teleLockConn:Disconnect() end
+        local origSize = teleportBtn.Size
+        local origPos = teleportBtn.Position
+        local td = TweenService:Create(teleportBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(teleportBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                teleLockConn = LockButtonPosition(teleportBtn, origPos)
+            end)
+        end)
         local targetId = inputBox.Text
         if targetId == "" then
             if config.OnError then config.OnError("请输入服务器实例ID") end
@@ -1652,7 +2073,24 @@ function Page:CreateSavedServersPanel(config)
             tpCorner.Parent = tpBtn
             local tpLockConn = LockButtonPosition(tpBtn, tpBtn.Position)
             tpBtn.MouseButton1Click:Connect(function()
-                playButtonClickAnimation(tpBtn, tpBtn.Position, tpLockConn)
+                if tpLockConn then tpLockConn:Disconnect() end
+                local origSize = tpBtn.Size
+                local origPos = tpBtn.Position
+                local td = TweenService:Create(tpBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+                    Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+                })
+                td:Play()
+                td.Completed:Connect(function()
+                    local tu = TweenService:Create(tpBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                        Size = origSize,
+                        Position = origPos
+                    })
+                    tu:Play()
+                    tu.Completed:Connect(function()
+                        tpLockConn = LockButtonPosition(tpBtn, origPos)
+                    end)
+                end)
                 if config.OnTeleport then config.OnTeleport(entry.id) end
             end)
             local renameBtn = Instance.new("TextButton")
@@ -1669,7 +2107,24 @@ function Page:CreateSavedServersPanel(config)
             renameCorner.Parent = renameBtn
             local renameLockConn = LockButtonPosition(renameBtn, renameBtn.Position)
             renameBtn.MouseButton1Click:Connect(function()
-                playButtonClickAnimation(renameBtn, renameBtn.Position, renameLockConn)
+                if renameLockConn then renameLockConn:Disconnect() end
+                local origSize = renameBtn.Size
+                local origPos = renameBtn.Position
+                local td = TweenService:Create(renameBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+                    Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+                })
+                td:Play()
+                td.Completed:Connect(function()
+                    local tu = TweenService:Create(renameBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                        Size = origSize,
+                        Position = origPos
+                    })
+                    tu:Play()
+                    tu.Completed:Connect(function()
+                        renameLockConn = LockButtonPosition(renameBtn, origPos)
+                    end)
+                end)
                 local renamePanel = Instance.new("Frame")
                 renamePanel.Parent = panel
                 renamePanel.Size = UDim2.new(0, 200, 0, 60)
@@ -1705,7 +2160,24 @@ function Page:CreateSavedServersPanel(config)
                 cfCorner.Parent = confirmBtn
                 local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
                 confirmBtn.MouseButton1Click:Connect(function()
-                    playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
+                    if confirmLockConn then confirmLockConn:Disconnect() end
+                    local origSize = confirmBtn.Size
+                    local origPos = confirmBtn.Position
+                    local td = TweenService:Create(confirmBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                        Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+                        Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+                    })
+                    td:Play()
+                    td.Completed:Connect(function()
+                        local tu = TweenService:Create(confirmBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                            Size = origSize,
+                            Position = origPos
+                        })
+                        tu:Play()
+                        tu.Completed:Connect(function()
+                            confirmLockConn = LockButtonPosition(confirmBtn, origPos)
+                        end)
+                    end)
                     if config.OnRename then
                         if config.OnRename(entry.id, input.Text) then
                             refreshList()
@@ -1727,7 +2199,24 @@ function Page:CreateSavedServersPanel(config)
                 clCorner.Parent = cancelBtn
                 local cancelLockConn = LockButtonPosition(cancelBtn, cancelBtn.Position)
                 cancelBtn.MouseButton1Click:Connect(function()
-                    playButtonClickAnimation(cancelBtn, cancelBtn.Position, cancelLockConn)
+                    if cancelLockConn then cancelLockConn:Disconnect() end
+                    local origSize = cancelBtn.Size
+                    local origPos = cancelBtn.Position
+                    local td = TweenService:Create(cancelBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                        Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+                        Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+                    })
+                    td:Play()
+                    td.Completed:Connect(function()
+                        local tu = TweenService:Create(cancelBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                            Size = origSize,
+                            Position = origPos
+                        })
+                        tu:Play()
+                        tu.Completed:Connect(function()
+                            cancelLockConn = LockButtonPosition(cancelBtn, origPos)
+                        end)
+                    end)
                     renamePanel:Destroy()
                 end)
             end)
@@ -1745,7 +2234,24 @@ function Page:CreateSavedServersPanel(config)
             delCorner.Parent = delBtn
             local delLockConn = LockButtonPosition(delBtn, delBtn.Position)
             delBtn.MouseButton1Click:Connect(function()
-                playButtonClickAnimation(delBtn, delBtn.Position, delLockConn)
+                if delLockConn then delLockConn:Disconnect() end
+                local origSize = delBtn.Size
+                local origPos = delBtn.Position
+                local td = TweenService:Create(delBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+                    Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+                })
+                td:Play()
+                td.Completed:Connect(function()
+                    local tu = TweenService:Create(delBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                        Size = origSize,
+                        Position = origPos
+                    })
+                    tu:Play()
+                    tu.Completed:Connect(function()
+                        delLockConn = LockButtonPosition(delBtn, origPos)
+                    end)
+                end)
                 if config.OnDelete then
                     config.OnDelete(entry.id)
                     refreshList()
@@ -1769,7 +2275,24 @@ function Page:CreateSavedServersPanel(config)
     saveCorner.Parent = saveCurrentBtn
     local saveCurrentLockConn = LockButtonPosition(saveCurrentBtn, saveCurrentBtn.Position)
     saveCurrentBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(saveCurrentBtn, saveCurrentBtn.Position, saveCurrentLockConn)
+        if saveCurrentLockConn then saveCurrentLockConn:Disconnect() end
+        local origSize = saveCurrentBtn.Size
+        local origPos = saveCurrentBtn.Position
+        local td = TweenService:Create(saveCurrentBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(saveCurrentBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                saveCurrentLockConn = LockButtonPosition(saveCurrentBtn, origPos)
+            end)
+        end)
         local namePanel = Instance.new("Frame")
         namePanel.Parent = panel
         namePanel.Size = UDim2.new(0, 200, 0, 60)
@@ -1805,7 +2328,24 @@ function Page:CreateSavedServersPanel(config)
         cf.Parent = confirmBtn
         local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
         confirmBtn.MouseButton1Click:Connect(function()
-            playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
+            if confirmLockConn then confirmLockConn:Disconnect() end
+            local origSize = confirmBtn.Size
+            local origPos = confirmBtn.Position
+            local td = TweenService:Create(confirmBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+                Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+            })
+            td:Play()
+            td.Completed:Connect(function()
+                local tu = TweenService:Create(confirmBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                    Size = origSize,
+                    Position = origPos
+                })
+                tu:Play()
+                tu.Completed:Connect(function()
+                    confirmLockConn = LockButtonPosition(confirmBtn, origPos)
+                end)
+            end)
             if config.OnSave then
                 config.OnSave(game.JobId, input.Text)
                 refreshList()
@@ -1826,7 +2366,24 @@ function Page:CreateSavedServersPanel(config)
         cl.Parent = cancelBtn
         local cancelLockConn = LockButtonPosition(cancelBtn, cancelBtn.Position)
         cancelBtn.MouseButton1Click:Connect(function()
-            playButtonClickAnimation(cancelBtn, cancelBtn.Position, cancelLockConn)
+            if cancelLockConn then cancelLockConn:Disconnect() end
+            local origSize = cancelBtn.Size
+            local origPos = cancelBtn.Position
+            local td = TweenService:Create(cancelBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+                Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+            })
+            td:Play()
+            td.Completed:Connect(function()
+                local tu = TweenService:Create(cancelBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                    Size = origSize,
+                    Position = origPos
+                })
+                tu:Play()
+                tu.Completed:Connect(function()
+                    cancelLockConn = LockButtonPosition(cancelBtn, origPos)
+                end)
+            end)
             namePanel:Destroy()
         end)
     end)
@@ -1843,7 +2400,24 @@ function Page:CreateSavedServersPanel(config)
     closeCorner.Parent = closeBtn
     local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        if closeLockConn then closeLockConn:Disconnect() end
+        local origSize = closeBtn.Size
+        local origPos = closeBtn.Position
+        local td = TweenService:Create(closeBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(closeBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                closeLockConn = LockButtonPosition(closeBtn, origPos)
+            end)
+        end)
         tweenPanelClose(panel)
     end)
     panel:GetPropertyChangedSignal("Visible"):Connect(function()
@@ -1957,11 +2531,45 @@ function Page:CreateKickPanel(config)
     closeCorner.Parent = closeBtn
     local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        if closeLockConn then closeLockConn:Disconnect() end
+        local origSize = closeBtn.Size
+        local origPos = closeBtn.Position
+        local td = TweenService:Create(closeBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(closeBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                closeLockConn = LockButtonPosition(closeBtn, origPos)
+            end)
+        end)
         tweenPanelClose(panel)
     end)
     kickBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(kickBtn, kickBtn.Position, kickLockConn)
+        if kickLockConn then kickLockConn:Disconnect() end
+        local origSize = kickBtn.Size
+        local origPos = kickBtn.Position
+        local td = TweenService:Create(kickBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(kickBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                kickLockConn = LockButtonPosition(kickBtn, origPos)
+            end)
+        end)
         local targetName = inputBox.Text
         if targetName == "" then
             if config.OnError then config.OnError("请输入玩家名称") end
@@ -2063,11 +2671,45 @@ function Page:CreateCustomPopup(config)
     closeCorner.Parent = closeBtn
     local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        if closeLockConn then closeLockConn:Disconnect() end
+        local origSize = closeBtn.Size
+        local origPos = closeBtn.Position
+        local td = TweenService:Create(closeBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(closeBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                closeLockConn = LockButtonPosition(closeBtn, origPos)
+            end)
+        end)
         tweenPanelClose(panel)
     end)
     confirmBtn.MouseButton1Click:Connect(function()
-        playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
+        if confirmLockConn then confirmLockConn:Disconnect() end
+        local origSize = confirmBtn.Size
+        local origPos = confirmBtn.Position
+        local td = TweenService:Create(confirmBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(origSize.X.Scale, origSize.X.Offset * 0.9, origSize.Y.Scale, origSize.Y.Offset * 0.9),
+            Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 3)
+        })
+        td:Play()
+        td.Completed:Connect(function()
+            local tu = TweenService:Create(confirmBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = origSize,
+                Position = origPos
+            })
+            tu:Play()
+            tu.Completed:Connect(function()
+                confirmLockConn = LockButtonPosition(confirmBtn, origPos)
+            end)
+        end)
         if config.OnConfirm then config.OnConfirm() end
         tweenPanelClose(panel)
     end)
@@ -2092,344 +2734,4 @@ function Page:AddCustomPopup(config)
             if panelOpen and not panel.Visible then
                 panelOpen = false
             end
-            if not panelOpen then
-                tweenPanelOpen(panel, targetSize, targetPos)
-                panelOpen = true
-            else
-                tweenPanelClose(panel)
-                panelOpen = false
-            end
-        end
-    })
-    return btn
-end
-
-function UILibrary:CreateWindow(config)
-    config = config or {}
-    local theme = self.Defaults.Theme
-    if config.Theme then
-        for k, v in pairs(config.Theme) do
-            theme[k] = v
-        end
-    end
-    local toggleFixedPos = config.TogglePosition or self.Defaults.TogglePosition
-    local Players = game:GetService("Players")
-    local RunService = game:GetService("RunService")
-    local LocalPlayer = Players.LocalPlayer
-    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = config.ScreenGuiName or "UniversalUI"
-    ScreenGui.Parent = PlayerGui
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    ScreenGui.IgnoreGuiInset = true
-    ScreenGui.ResetOnSpawn = false
-    local Main = Instance.new("Frame")
-    Main.Name = "Main"
-    Main.Parent = ScreenGui
-    Main.BackgroundColor3 = theme.MainBg
-    Main.Position = UDim2.new(0.5, 0, 0.5, 10)
-    Main.Size = UDim2.new(0, 650, 0, 280)
-    Main.AnchorPoint = Vector2.new(0.5, 0.5)
-    Main.Visible = false
-    Main.ZIndex = 10
-    Main.ClipsDescendants = true
-    local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 10)
-    MainCorner.Parent = Main
-    local MainStroke = Instance.new("UIStroke")
-    MainStroke.Thickness = 2
-    MainStroke.Color = theme.MainStroke
-    MainStroke.Parent = Main
-    local BeanBack = Instance.new("Frame")
-    BeanBack.Name = "BeanBackground"
-    BeanBack.Parent = Main
-    BeanBack.BackgroundTransparency = 1
-    BeanBack.Size = UDim2.new(1, 0, 1, 0)
-    BeanBack.ZIndex = 1
-    local Line = Instance.new("Frame")
-    Line.Parent = Main
-    Line.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    Line.Position = UDim2.new(0.3, 0, 0, 40)
-    Line.Size = UDim2.new(0, 2, 1, -40)
-    Line.ZIndex = 11
-    local CategoryArea = Instance.new("Frame")
-    CategoryArea.Name = "CategoryArea"
-    CategoryArea.Parent = Main
-    CategoryArea.BackgroundTransparency = 1
-    CategoryArea.Size = UDim2.new(0.3, -10, 1, -40)
-    CategoryArea.Position = UDim2.new(0, 10, 0, 40)
-    CategoryArea.ZIndex = 20
-    local ContentArea = Instance.new("Frame")
-    ContentArea.Name = "ContentArea"
-    ContentArea.Parent = Main
-    ContentArea.BackgroundTransparency = 1
-    ContentArea.Size = UDim2.new(0.7, -12, 1, -40)
-    ContentArea.Position = UDim2.new(0.3, 12, 0, 40)
-    ContentArea.ZIndex = 20
-    ContentArea.ClipsDescendants = true
-    local TopBar = Instance.new("Frame")
-    TopBar.Name = "TopBar"
-    TopBar.Parent = Main
-    TopBar.BackgroundColor3 = theme.TopBar
-    TopBar.Size = UDim2.new(1, 0, 0, 40)
-    TopBar.ZIndex = 15
-    local TopCorner = Instance.new("UICorner")
-    TopCorner.CornerRadius = UDim.new(0, 10)
-    TopCorner.Parent = TopBar
-    local Title = Instance.new("TextLabel")
-    Title.Name = "Title"
-    Title.Parent = TopBar
-    Title.BackgroundTransparency = 1
-    Title.Size = UDim2.new(1, -100, 1, 0)
-    Title.Position = UDim2.new(0, 10, 0, 0)
-    Title.Font = Enum.Font.ArialBold
-    Title.Text = config.Title or "通用脚本"
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.TextSize = 18
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.ZIndex = 16
-    local MinimizeBtn = Instance.new("TextButton")
-    MinimizeBtn.Parent = TopBar
-    MinimizeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    MinimizeBtn.Size = UDim2.new(0, 36, 0, 32)
-    MinimizeBtn.Position = UDim2.new(1, -86, 0, 4)
-    MinimizeBtn.Font = Enum.Font.ArialBold
-    MinimizeBtn.Text = "—"
-    MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    MinimizeBtn.TextSize = 20
-    MinimizeBtn.ZIndex = 17
-    local MinCorner = Instance.new("UICorner")
-    MinCorner.CornerRadius = UDim.new(0, 6)
-    MinCorner.Parent = MinimizeBtn
-    local CloseBtn = Instance.new("TextButton")
-    CloseBtn.Parent = TopBar
-    CloseBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    CloseBtn.Size = UDim2.new(0, 36, 0, 32)
-    CloseBtn.Position = UDim2.new(1, -46, 0, 4)
-    CloseBtn.Font = Enum.Font.ArialBold
-    CloseBtn.Text = "X"
-    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
-    CloseBtn.TextSize = 20
-    CloseBtn.ZIndex = 17
-    local CloseCorner = Instance.new("UICorner")
-    CloseCorner.CornerRadius = UDim.new(0, 6)
-    CloseCorner.Parent = CloseBtn
-    local ToggleBtn = Instance.new("TextButton")
-    ToggleBtn.Parent = ScreenGui
-    ToggleBtn.BackgroundColor3 = Color3.new(0, 0, 0)
-    ToggleBtn.BackgroundTransparency = 0.5
-    ToggleBtn.Position = toggleFixedPos
-    ToggleBtn.Size = UDim2.new(0, 140, 0, 50)
-    ToggleBtn.Font = Enum.Font.ArialBold
-    ToggleBtn.Text = config.ToggleText or "打开菜单"
-    ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleBtn.TextSize = 20
-    ToggleBtn.ZIndex = 100
-    ToggleBtn.Active = false
-    ToggleBtn.Selectable = false
-    local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(0, 8)
-    ToggleCorner.Parent = ToggleBtn
-    local toggleLockConn = LockButtonPosition(ToggleBtn, toggleFixedPos)
-    local mainTargetSize = UDim2.new(0, 650, 0, 280)
-    local mainTargetPos = UDim2.new(0.5, 0, 0.5, 10)
-    local function getToggleCenter()
-        local absPos = ToggleBtn.AbsolutePosition
-        local absSize = ToggleBtn.AbsoluteSize
-        return UDim2.new(0, absPos.X + absSize.X / 2, 0, absPos.Y + absSize.Y / 2)
-    end
-    local function animateMainOpen()
-        Main.Visible = true
-        Main.Size = UDim2.new(0, 0, 0, 0)
-        Main.Position = getToggleCenter()
-        Main.BackgroundTransparency = 1
-        local openTween = TweenService:Create(Main, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = mainTargetSize,
-            Position = mainTargetPos,
-            BackgroundTransparency = 0
-        })
-        openTween:Play()
-    end
-    local function animateMainClose()
-        local closeTween = TweenService:Create(Main, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-            Size = UDim2.new(0, 0, 0, 0),
-            Position = getToggleCenter(),
-            BackgroundTransparency = 1
-        })
-        closeTween:Play()
-        closeTween.Completed:Connect(function()
-            Main.Visible = false
-            Main.Size = mainTargetSize
-            Main.Position = mainTargetPos
-            Main.BackgroundTransparency = 0
-        end)
-    end
-    ToggleBtn.MouseButton1Click:Connect(function()
-        if toggleLockConn then toggleLockConn:Disconnect() end
-        local originalSize = ToggleBtn.Size
-        local tweenDown = TweenService:Create(ToggleBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset * 0.88, originalSize.Y.Scale, originalSize.Y.Offset * 0.88),
-            Position = UDim2.new(toggleFixedPos.X.Scale, toggleFixedPos.X.Offset, toggleFixedPos.Y.Scale, toggleFixedPos.Y.Offset - 4)
-        })
-        tweenDown:Play()
-        tweenDown.Completed:Connect(function()
-            local tweenUp = TweenService:Create(ToggleBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Size = originalSize,
-                Position = toggleFixedPos
-            })
-            tweenUp:Play()
-            tweenUp.Completed:Connect(function()
-                toggleLockConn = LockButtonPosition(ToggleBtn, toggleFixedPos)
-            end)
-        end)
-        if Main.Visible then
-            animateMainClose()
-            ToggleBtn.Text = config.ToggleText or "打开菜单"
-        else
-            animateMainOpen()
-            ToggleBtn.Text = config.ToggleTextClose or "关闭菜单"
-        end
-    end)
-    MinimizeBtn.MouseButton1Click:Connect(function()
-        animateMainClose()
-        ToggleBtn.Text = config.ToggleText or "打开菜单"
-    end)
-    CloseBtn.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
-    end)
-    local beans = {"🤓", "😎", "🥳"}
-    local weight = {1, 1, 5}
-    local function GetRandomBean()
-        local total = 0
-        for _, v in pairs(weight) do total += v end
-        local r = math.random(1, total)
-        local curr = 0
-        for i = 1, #weight do
-            curr += weight[i]
-            if r <= curr then return beans[i] end
-        end
-        return "🥳"
-    end
-    local beanPaused = true
-    local function SpawnBean()
-        if #BeanBack:GetChildren() > 25 then return end
-        local label = Instance.new("TextLabel")
-        label.Parent = BeanBack
-        label.BackgroundTransparency = 1
-        label.Size = UDim2.new(0, 22, 0, 22)
-        label.Text = GetRandomBean()
-        label.TextSize = 18
-        label.Font = Enum.Font.Unknown
-        label.ZIndex = 1
-        local x = math.random(0, math.max(Main.AbsoluteSize.X - 22, 50))
-        label.Position = UDim2.new(0, x, 0, -22)
-        local speed = math.random(30, 50)
-        local drift = math.random(-15, 15)
-        local alpha = 0
-        local conn
-        conn = RunService.Heartbeat:Connect(function(dt)
-            if not label or not label.Parent then conn:Disconnect() return end
-            if beanPaused then return end
-            alpha += dt
-            local newY = alpha * speed - 22
-            if newY > 280 then conn:Disconnect() label:Destroy() return end
-            label.Position = UDim2.new(0, x + math.sin(alpha * 1.2) * drift, 0, newY)
-        end)
-    end
-    task.spawn(function()
-        while task.wait(math.random(150, 300) / 1000) do
-            if ScreenGui and ScreenGui.Parent then
-                if not beanPaused then
-                    SpawnBean()
-                end
-            else
-                break
-            end
-        end
-    end)
-    Main:GetPropertyChangedSignal("Visible"):Connect(function()
-        beanPaused = not Main.Visible
-    end)
-    local window = {
-        ScreenGui = ScreenGui,
-        Main = Main,
-        CategoryArea = CategoryArea,
-        ContentArea = ContentArea,
-        Pages = {},
-        Categories = {},
-        Selected = nil,
-        Theme = theme,
-    }
-    function window:AddPage(name)
-        local cat = Instance.new("TextButton")
-        cat.Name = "Cat" .. name
-        cat.Parent = self.CategoryArea
-        cat.BackgroundTransparency = 0.8
-        cat.BackgroundColor3 = self.Theme.CatBg
-        cat.Size = UDim2.new(1, 0, 0, 35)
-        cat.Position = UDim2.new(0, 0, 0, (#self.Categories) * 40)
-        cat.Text = name
-        cat.TextColor3 = Color3.new(1, 1, 1)
-        cat.TextSize = 14
-        cat.AutoButtonColor = false
-        cat.ZIndex = 21
-        cat.Font = Enum.Font.SourceSansBold
-        local catLockConn = LockButtonPosition(cat, cat.Position)
-        cat.MouseButton1Click:Connect(function()
-            playButtonClickAnimation(cat, cat.Position, catLockConn)
-            if self.Selected then
-                self.Selected.BackgroundTransparency = 0.8
-                self.Selected.BackgroundColor3 = self.Theme.CatBg
-            end
-            cat.BackgroundTransparency = 0.5
-            cat.BackgroundColor3 = self.Theme.CatActive
-            self.Selected = cat
-            for _, p in pairs(self.Pages) do
-                p.frame.Visible = false
-                p.scrollFrame.Visible = false
-            end
-            for _, child in ipairs(self.Main:GetChildren()) do
-                if child:IsA("Frame") and child.Name:find("Panel") then
-                    child.Visible = false
-                end
-            end
-            page.frame.Visible = true
-            page.scrollFrame.Visible = true
-            page:UpdateCanvas()
-        end)
-        local pageScroll = Instance.new("ScrollingFrame")
-        pageScroll.Name = "Scroll_" .. name
-        pageScroll.Parent = self.ContentArea
-        pageScroll.BackgroundTransparency = 1
-        pageScroll.Size = UDim2.new(1, 0, 1, 0)
-        pageScroll.CanvasSize = UDim2.new(0, 0, 0, 200)
-        pageScroll.ScrollBarThickness = 6
-        pageScroll.BorderSizePixel = 0
-        pageScroll.ZIndex = 20
-        pageScroll.Visible = false
-        local page = Page.new(pageScroll, self.Theme)
-        page.scrollFrame = pageScroll
-        page.frame.Name = "Page" .. name
-        self.Pages[name] = page
-        table.insert(self.Categories, cat)
-        return page
-    end
-    task.defer(function()
-        if window.Categories[1] then
-            window.Categories[1]:MouseButton1Click()
-        end
-    end)
-    return window
-end
-
-function UILibrary:Init(config)
-    config = config or {}
-    if config.Theme then
-        for k, v in pairs(config.Theme) do
-            self.Defaults.Theme[k] = v
-        end
-    end
-    return self
-end
-
-return UILibrary
+            if not panel
