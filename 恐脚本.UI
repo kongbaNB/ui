@@ -134,7 +134,6 @@ function Page:AddButton(config)
     btn.TextColor3 = config.TextColor or self.theme.ButtonText
     btn.TextSize = config.TextSize or 14
     btn.AutoButtonColor = false
-    btn.Active = true
     btn.ZIndex = 21
     btn.Font = Enum.Font.SourceSansBold
     local corner = Instance.new("UICorner")
@@ -142,6 +141,16 @@ function Page:AddButton(config)
     corner.Parent = btn
     local originalSize = size
     btn.MouseButton1Click:Connect(function()
+        local tweenDown = TweenService:Create(btn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset * 0.92, originalSize.Y.Scale, originalSize.Y.Offset * 0.92)
+        })
+        tweenDown:Play()
+        tweenDown.Completed:Connect(function()
+            local tweenUp = TweenService:Create(btn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = originalSize
+            })
+            tweenUp:Play()
+        end)
         if config.Callback then
             config.Callback()
         end
@@ -2271,11 +2280,6 @@ function UILibrary:CreateWindow(config)
             cat.BackgroundTransparency = 0.5
             cat.BackgroundColor3 = self.Theme.CatActive
             self.Selected = cat
-            for _, child in ipairs(self.ContentArea:GetChildren()) do
-                if child:IsA("ScrollingFrame") then
-                    child.Visible = false
-                end
-            end
             for _, p in pairs(self.Pages) do
                 p.frame.Visible = false
                 p.scrollFrame.Visible = false
@@ -2285,13 +2289,9 @@ function UILibrary:CreateWindow(config)
                     child.Visible = false
                 end
             end
-            local currentPage = self.Pages[name]
-            if currentPage then
-                currentPage.frame.Visible = true
-                currentPage.scrollFrame.Visible = true
-                currentPage.scrollFrame.CanvasPosition = Vector2.new(0, 0)
-                currentPage:UpdateCanvas()
-            end
+            page.frame.Visible = true
+            page.scrollFrame.Visible = true
+            page:UpdateCanvas()
         end)
         table.insert(self.Categories, cat)
         return page
