@@ -26,8 +26,6 @@ UILibrary.Defaults = {
     PanelCorner = UDim.new(0, 12),
     CloseCorner = UDim.new(0, 4),
     AnimationSpeed = 0.2,
-    -- 默认 Toggle 按钮位置（可外部配置）
-    TogglePosition = UDim2.new(0.8, 0, 0.3, 0),
 }
 
 function UILibrary:CreateCorner(parent, radius)
@@ -311,7 +309,7 @@ function Page:CreateSliderPanel(config, minVal, maxVal, defaultVal, currentVal, 
     resetBtn.Font = Enum.Font.SourceSansBold
     resetBtn.TextSize = 14
     local resetCorner = Instance.new("UICorner")
-    resetCorner.CornerRadius = UDim2.new(0, 6)
+    resetCorner.CornerRadius = UDim.new(0, 6)
     resetCorner.Parent = resetBtn
     resetBtn.MouseButton1Click:Connect(function()
         setVal(defaultVal)
@@ -1972,10 +1970,9 @@ function UILibrary:CreateWindow(config)
             theme[k] = v
         end
     end
-    local toggleFixedPos = config.TogglePosition or self.Defaults.TogglePosition
-
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
+    local UserInputService = game:GetService("UserInputService")
     local LocalPlayer = Players.LocalPlayer
     local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
     local ScreenGui = Instance.new("ScreenGui")
@@ -2079,29 +2076,39 @@ function UILibrary:CreateWindow(config)
     ToggleBtn.Parent = ScreenGui
     ToggleBtn.BackgroundColor3 = Color3.new(0, 0, 0)
     ToggleBtn.BackgroundTransparency = 0.5
-    ToggleBtn.Position = toggleFixedPos
+    ToggleBtn.Position = UDim2.new(0.8, 0, 0.3, 0)
     ToggleBtn.Size = UDim2.new(0, 140, 0, 50)
     ToggleBtn.Font = Enum.Font.ArialBold
     ToggleBtn.Text = config.ToggleText or "打开菜单"
     ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     ToggleBtn.TextSize = 20
     ToggleBtn.ZIndex = 100
-    ToggleBtn.Active = false
-    ToggleBtn.Selectable = false
     local ToggleCorner = Instance.new("UICorner")
     ToggleCorner.CornerRadius = UDim.new(0, 8)
     ToggleCorner.Parent = ToggleBtn
-
-    -- 实时强制固定按钮位置，防止服务器篡改
-    task.spawn(function()
-        while ScreenGui and ScreenGui.Parent and ToggleBtn and ToggleBtn.Parent do
-            if ToggleBtn.Position ~= toggleFixedPos then
-                ToggleBtn.Position = toggleFixedPos
+    local dragging, dragInput, dragStartPos, btnStartPos = false, nil, nil, nil
+    ToggleBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if not dragging and not dragInput then
+                dragging = true
+                dragInput = input
+                dragStartPos = input.Position
+                btnStartPos = ToggleBtn.Position
             end
-            RunService.Heartbeat:Wait()
         end
     end)
-
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input == dragInput then
+            local delta = input.Position - dragStartPos
+            ToggleBtn.Position = UDim2.new(btnStartPos.X.Scale, btnStartPos.X.Offset + delta.X, btnStartPos.Y.Scale, btnStartPos.Y.Offset + delta.Y)
+        end
+    end)
+    ToggleBtn.InputEnded:Connect(function(input)
+        if input == dragInput then
+            dragging = false
+            dragInput = nil
+        end
+    end)
     local mainTargetSize = UDim2.new(0, 650, 0, 280)
     local mainTargetPos = UDim2.new(0.5, 0, 0.5, 10)
     local function getToggleCenter()
