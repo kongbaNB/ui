@@ -85,6 +85,31 @@ local function LockButtonPosition(btn, initPos)
             conn:Disconnect()
         end
     end)
+    return conn
+end
+
+local function playButtonClickAnimation(btn, initPos, lockConn)
+    if not btn or not btn.Parent then return end
+    local originalSize = btn.Size
+    local originalPos = initPos
+
+    if lockConn then lockConn:Disconnect() end
+
+    local tweenDown = TweenService:Create(btn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset * 0.9, originalSize.Y.Scale, originalSize.Y.Offset * 0.9),
+        Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset, originalPos.Y.Scale, originalPos.Y.Offset - 3)
+    })
+    tweenDown:Play()
+    tweenDown.Completed:Connect(function()
+        local tweenUp = TweenService:Create(btn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = originalSize,
+            Position = originalPos
+        })
+        tweenUp:Play()
+        tweenUp.Completed:Connect(function()
+            lockConn = LockButtonPosition(btn, originalPos)
+        end)
+    end)
 end
 
 local Page = {}
@@ -156,8 +181,9 @@ function Page:AddButton(config)
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = btn
-    LockButtonPosition(btn, pos)
+    local lockConn = LockButtonPosition(btn, pos)
     btn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(btn, pos, lockConn)
         if config.Callback then
             config.Callback()
         end
@@ -310,8 +336,9 @@ function Page:CreateSliderPanel(config, minVal, maxVal, defaultVal, currentVal, 
     local confirmCorner = Instance.new("UICorner")
     confirmCorner.CornerRadius = UDim.new(0, 6)
     confirmCorner.Parent = confirmBtn
-    LockButtonPosition(confirmBtn, confirmBtn.Position)
+    local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
     confirmBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
         local num = tonumber(inputBox.Text)
         if num then setVal(num) end
         tweenPanelClose(panel)
@@ -328,8 +355,9 @@ function Page:CreateSliderPanel(config, minVal, maxVal, defaultVal, currentVal, 
     local resetCorner = Instance.new("UICorner")
     resetCorner.CornerRadius = UDim.new(0, 6)
     resetCorner.Parent = resetBtn
-    LockButtonPosition(resetBtn, resetBtn.Position)
+    local resetLockConn = LockButtonPosition(resetBtn, resetBtn.Position)
     resetBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(resetBtn, resetBtn.Position, resetLockConn)
         setVal(defaultVal)
         tweenPanelClose(panel)
     end)
@@ -344,8 +372,9 @@ function Page:CreateSliderPanel(config, minVal, maxVal, defaultVal, currentVal, 
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    LockButtonPosition(closeBtn, closeBtn.Position)
+    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
         tweenPanelClose(panel)
     end)
     local dragging = false
@@ -440,8 +469,9 @@ function Page:ShowPlayerSelect(onSelect)
             local pCorner = Instance.new("UICorner")
             pCorner.CornerRadius = UDim.new(0, 6)
             pCorner.Parent = pBtn
-            LockButtonPosition(pBtn, pBtn.Position)
+            local pLockConn = LockButtonPosition(pBtn, pBtn.Position)
             pBtn.MouseButton1Click:Connect(function()
+                playButtonClickAnimation(pBtn, pBtn.Position, pLockConn)
                 if onSelect then onSelect(p) end
                 local closeTween = TweenService:Create(bg, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
                 closeTween:Play()
@@ -463,8 +493,9 @@ function Page:ShowPlayerSelect(onSelect)
     local cancelCorner = Instance.new("UICorner")
     cancelCorner.CornerRadius = UDim.new(0, 6)
     cancelCorner.Parent = cancelBtn
-    LockButtonPosition(cancelBtn, cancelBtn.Position)
+    local cancelLockConn = LockButtonPosition(cancelBtn, cancelBtn.Position)
     cancelBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(cancelBtn, cancelBtn.Position, cancelLockConn)
         local closeTween = TweenService:Create(bg, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
         closeTween:Play()
         closeTween.Completed:Connect(function() selectGui:Destroy() end)
@@ -481,8 +512,9 @@ function Page:ShowPlayerSelect(onSelect)
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    LockButtonPosition(closeBtn, closeBtn.Position)
+    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
     closeBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
         local closeTween = TweenService:Create(bg, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
         closeTween:Play()
         closeTween.Completed:Connect(function() selectGui:Destroy() end)
@@ -555,7 +587,7 @@ function Page:CreateCoordPanel(config)
     local teleportCorner = Instance.new("UICorner")
     teleportCorner.CornerRadius = UDim.new(0, 6)
     teleportCorner.Parent = teleportBtn
-    LockButtonPosition(teleportBtn, teleportBtn.Position)
+    local teleLockConn = LockButtonPosition(teleportBtn, teleportBtn.Position)
     local copyBtn = Instance.new("TextButton")
     copyBtn.Parent = panel
     copyBtn.Size = UDim2.new(0, 80, 0, 28)
@@ -568,7 +600,7 @@ function Page:CreateCoordPanel(config)
     local copyCorner = Instance.new("UICorner")
     copyCorner.CornerRadius = UDim.new(0, 6)
     copyCorner.Parent = copyBtn
-    LockButtonPosition(copyBtn, copyBtn.Position)
+    local copyLockConn = LockButtonPosition(copyBtn, copyBtn.Position)
     local closeBtn = Instance.new("TextButton")
     closeBtn.Parent = panel
     closeBtn.Size = UDim2.new(0, 22, 0, 22)
@@ -580,8 +612,11 @@ function Page:CreateCoordPanel(config)
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    LockButtonPosition(closeBtn, closeBtn.Position)
-    closeBtn.MouseButton1Click:Connect(function() tweenPanelClose(panel) end)
+    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
+    closeBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        tweenPanelClose(panel)
+    end)
     local function parseCoords(str)
         local parts = str:split(",")
         if #parts >= 3 then
@@ -596,6 +631,7 @@ function Page:CreateCoordPanel(config)
         return nil
     end
     teleportBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(teleportBtn, teleportBtn.Position, teleLockConn)
         local input = inputBox.Text
         if input == "" or input:match("^%s*$") then
             if config.OnError then config.OnError("请输入坐标") end
@@ -617,6 +653,7 @@ function Page:CreateCoordPanel(config)
         end
     end
     copyBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(copyBtn, copyBtn.Position, copyLockConn)
         if config.GetPosition then
             local pos = config.GetPosition()
             if pos then
@@ -751,8 +788,9 @@ function Page:CreateAimbotPanel(config)
     local confirmCorner = Instance.new("UICorner")
     confirmCorner.CornerRadius = UDim.new(0, 6)
     confirmCorner.Parent = confirmBtn
-    LockButtonPosition(confirmBtn, confirmBtn.Position)
+    local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
     confirmBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
         if config.OnChange then config.OnChange(currentRadius) end
         tweenPanelClose(panel)
     end)
@@ -768,8 +806,9 @@ function Page:CreateAimbotPanel(config)
     local resetCorner = Instance.new("UICorner")
     resetCorner.CornerRadius = UDim.new(0, 6)
     resetCorner.Parent = resetBtn
-    LockButtonPosition(resetBtn, resetBtn.Position)
+    local resetLockConn = LockButtonPosition(resetBtn, resetBtn.Position)
     resetBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(resetBtn, resetBtn.Position, resetLockConn)
         setRadius(defaultRadius)
         if config.OnChange then config.OnChange(defaultRadius) end
         tweenPanelClose(panel)
@@ -785,8 +824,11 @@ function Page:CreateAimbotPanel(config)
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    LockButtonPosition(closeBtn, closeBtn.Position)
-    closeBtn.MouseButton1Click:Connect(function() tweenPanelClose(panel) end)
+    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
+    closeBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        tweenPanelClose(panel)
+    end)
     local dragging = false
     local UserInputService = game:GetService("UserInputService")
     knob.InputBegan:Connect(function(input)
@@ -921,8 +963,9 @@ function Page:CreateHarassSpeedPanel(config)
     local confirmCorner = Instance.new("UICorner")
     confirmCorner.CornerRadius = UDim.new(0, 6)
     confirmCorner.Parent = confirmBtn
-    LockButtonPosition(confirmBtn, confirmBtn.Position)
+    local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
     confirmBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
         if config.OnChange then config.OnChange(currentSpeed) end
         tweenPanelClose(panel)
     end)
@@ -938,8 +981,9 @@ function Page:CreateHarassSpeedPanel(config)
     local resetCorner = Instance.new("UICorner")
     resetCorner.CornerRadius = UDim.new(0, 6)
     resetCorner.Parent = resetBtn
-    LockButtonPosition(resetBtn, resetBtn.Position)
+    local resetLockConn = LockButtonPosition(resetBtn, resetBtn.Position)
     resetBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(resetBtn, resetBtn.Position, resetLockConn)
         setSpeed(defaultSpeed)
         if config.OnChange then config.OnChange(defaultSpeed) end
         tweenPanelClose(panel)
@@ -955,8 +999,11 @@ function Page:CreateHarassSpeedPanel(config)
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    LockButtonPosition(closeBtn, closeBtn.Position)
-    closeBtn.MouseButton1Click:Connect(function() tweenPanelClose(panel) end)
+    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
+    closeBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        tweenPanelClose(panel)
+    end)
     local dragging = false
     local UserInputService = game:GetService("UserInputService")
     knob.InputBegan:Connect(function(input)
@@ -1091,8 +1138,9 @@ function Page:CreateSpinSpeedPanel(config)
     local confirmCorner = Instance.new("UICorner")
     confirmCorner.CornerRadius = UDim.new(0, 6)
     confirmCorner.Parent = confirmBtn
-    LockButtonPosition(confirmBtn, confirmBtn.Position)
+    local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
     confirmBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
         if config.OnChange then config.OnChange(currentSpin) end
         tweenPanelClose(panel)
     end)
@@ -1108,8 +1156,9 @@ function Page:CreateSpinSpeedPanel(config)
     local resetCorner = Instance.new("UICorner")
     resetCorner.CornerRadius = UDim.new(0, 6)
     resetCorner.Parent = resetBtn
-    LockButtonPosition(resetBtn, resetBtn.Position)
+    local resetLockConn = LockButtonPosition(resetBtn, resetBtn.Position)
     resetBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(resetBtn, resetBtn.Position, resetLockConn)
         setSpinSpeed(defaultSpin)
         if config.OnChange then config.OnChange(defaultSpin) end
         tweenPanelClose(panel)
@@ -1125,8 +1174,11 @@ function Page:CreateSpinSpeedPanel(config)
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    LockButtonPosition(closeBtn, closeBtn.Position)
-    closeBtn.MouseButton1Click:Connect(function() tweenPanelClose(panel) end)
+    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
+    closeBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        tweenPanelClose(panel)
+    end)
     local dragging = false
     local UserInputService = game:GetService("UserInputService")
     knob.InputBegan:Connect(function(input)
@@ -1234,7 +1286,7 @@ function Page:CreateInstanceIdPanel(config)
     local copyCorner = Instance.new("UICorner")
     copyCorner.CornerRadius = UDim.new(0, 6)
     copyCorner.Parent = copyBtn
-    LockButtonPosition(copyBtn, copyBtn.Position)
+    local copyLockConn = LockButtonPosition(copyBtn, copyBtn.Position)
     local saveBtn = Instance.new("TextButton")
     saveBtn.Parent = panel
     saveBtn.Size = UDim2.new(0, 120, 0, 28)
@@ -1247,7 +1299,7 @@ function Page:CreateInstanceIdPanel(config)
     local saveCorner = Instance.new("UICorner")
     saveCorner.CornerRadius = UDim.new(0, 6)
     saveCorner.Parent = saveBtn
-    LockButtonPosition(saveBtn, saveBtn.Position)
+    local saveLockConn = LockButtonPosition(saveBtn, saveBtn.Position)
     local closeBtn = Instance.new("TextButton")
     closeBtn.Parent = panel
     closeBtn.Size = UDim2.new(0, 22, 0, 22)
@@ -1259,15 +1311,20 @@ function Page:CreateInstanceIdPanel(config)
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    LockButtonPosition(closeBtn, closeBtn.Position)
-    closeBtn.MouseButton1Click:Connect(function() tweenPanelClose(panel) end)
+    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
+    closeBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        tweenPanelClose(panel)
+    end)
     local function updateIdDisplay()
         idLabel.Text = "ID: " .. game.JobId
     end
     copyBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(copyBtn, copyBtn.Position, copyLockConn)
         if config.OnCopy then config.OnCopy(game.JobId) end
     end)
     saveBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(saveBtn, saveBtn.Position, saveLockConn)
         if config.OnSave then config.OnSave(game.JobId) end
     end)
     panel:GetPropertyChangedSignal("Visible"):Connect(function()
@@ -1356,7 +1413,7 @@ function Page:CreatePlaceIdPanel(config)
     local copyCorner = Instance.new("UICorner")
     copyCorner.CornerRadius = UDim.new(0, 6)
     copyCorner.Parent = copyBtn
-    LockButtonPosition(copyBtn, copyBtn.Position)
+    local copyLockConn = LockButtonPosition(copyBtn, copyBtn.Position)
     local closeBtn = Instance.new("TextButton")
     closeBtn.Parent = panel
     closeBtn.Size = UDim2.new(0, 22, 0, 22)
@@ -1368,12 +1425,16 @@ function Page:CreatePlaceIdPanel(config)
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    LockButtonPosition(closeBtn, closeBtn.Position)
-    closeBtn.MouseButton1Click:Connect(function() tweenPanelClose(panel) end)
+    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
+    closeBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        tweenPanelClose(panel)
+    end)
     local function updateIdDisplay()
         idLabel.Text = "ID: " .. game.PlaceId
     end
     copyBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(copyBtn, copyBtn.Position, copyLockConn)
         if config.OnCopy then config.OnCopy(game.PlaceId) end
     end)
     panel:GetPropertyChangedSignal("Visible"):Connect(function()
@@ -1461,7 +1522,7 @@ function Page:CreateTeleportServerPanel(config)
     local teleportCorner = Instance.new("UICorner")
     teleportCorner.CornerRadius = UDim.new(0, 6)
     teleportCorner.Parent = teleportBtn
-    LockButtonPosition(teleportBtn, teleportBtn.Position)
+    local teleLockConn = LockButtonPosition(teleportBtn, teleportBtn.Position)
     local closeBtn = Instance.new("TextButton")
     closeBtn.Parent = panel
     closeBtn.Size = UDim2.new(0, 22, 0, 22)
@@ -1473,9 +1534,13 @@ function Page:CreateTeleportServerPanel(config)
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    LockButtonPosition(closeBtn, closeBtn.Position)
-    closeBtn.MouseButton1Click:Connect(function() tweenPanelClose(panel) end)
+    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
+    closeBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        tweenPanelClose(panel)
+    end)
     teleportBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(teleportBtn, teleportBtn.Position, teleLockConn)
         local targetId = inputBox.Text
         if targetId == "" then
             if config.OnError then config.OnError("请输入服务器实例ID") end
@@ -1585,8 +1650,9 @@ function Page:CreateSavedServersPanel(config)
             local tpCorner = Instance.new("UICorner")
             tpCorner.CornerRadius = UDim.new(0, 4)
             tpCorner.Parent = tpBtn
-            LockButtonPosition(tpBtn, tpBtn.Position)
+            local tpLockConn = LockButtonPosition(tpBtn, tpBtn.Position)
             tpBtn.MouseButton1Click:Connect(function()
+                playButtonClickAnimation(tpBtn, tpBtn.Position, tpLockConn)
                 if config.OnTeleport then config.OnTeleport(entry.id) end
             end)
             local renameBtn = Instance.new("TextButton")
@@ -1601,8 +1667,9 @@ function Page:CreateSavedServersPanel(config)
             local renameCorner = Instance.new("UICorner")
             renameCorner.CornerRadius = UDim.new(0, 4)
             renameCorner.Parent = renameBtn
-            LockButtonPosition(renameBtn, renameBtn.Position)
+            local renameLockConn = LockButtonPosition(renameBtn, renameBtn.Position)
             renameBtn.MouseButton1Click:Connect(function()
+                playButtonClickAnimation(renameBtn, renameBtn.Position, renameLockConn)
                 local renamePanel = Instance.new("Frame")
                 renamePanel.Parent = panel
                 renamePanel.Size = UDim2.new(0, 200, 0, 60)
@@ -1636,8 +1703,9 @@ function Page:CreateSavedServersPanel(config)
                 local cfCorner = Instance.new("UICorner")
                 cfCorner.CornerRadius = UDim.new(0, 4)
                 cfCorner.Parent = confirmBtn
-                LockButtonPosition(confirmBtn, confirmBtn.Position)
+                local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
                 confirmBtn.MouseButton1Click:Connect(function()
+                    playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
                     if config.OnRename then
                         if config.OnRename(entry.id, input.Text) then
                             refreshList()
@@ -1657,8 +1725,11 @@ function Page:CreateSavedServersPanel(config)
                 local clCorner = Instance.new("UICorner")
                 clCorner.CornerRadius = UDim.new(0, 4)
                 clCorner.Parent = cancelBtn
-                LockButtonPosition(cancelBtn, cancelBtn.Position)
-                cancelBtn.MouseButton1Click:Connect(function() renamePanel:Destroy() end)
+                local cancelLockConn = LockButtonPosition(cancelBtn, cancelBtn.Position)
+                cancelBtn.MouseButton1Click:Connect(function()
+                    playButtonClickAnimation(cancelBtn, cancelBtn.Position, cancelLockConn)
+                    renamePanel:Destroy()
+                end)
             end)
             local delBtn = Instance.new("TextButton")
             delBtn.Parent = row
@@ -1672,8 +1743,9 @@ function Page:CreateSavedServersPanel(config)
             local delCorner = Instance.new("UICorner")
             delCorner.CornerRadius = UDim.new(0, 4)
             delCorner.Parent = delBtn
-            LockButtonPosition(delBtn, delBtn.Position)
+            local delLockConn = LockButtonPosition(delBtn, delBtn.Position)
             delBtn.MouseButton1Click:Connect(function()
+                playButtonClickAnimation(delBtn, delBtn.Position, delLockConn)
                 if config.OnDelete then
                     config.OnDelete(entry.id)
                     refreshList()
@@ -1695,8 +1767,9 @@ function Page:CreateSavedServersPanel(config)
     local saveCorner = Instance.new("UICorner")
     saveCorner.CornerRadius = UDim.new(0, 6)
     saveCorner.Parent = saveCurrentBtn
-    LockButtonPosition(saveCurrentBtn, saveCurrentBtn.Position)
+    local saveCurrentLockConn = LockButtonPosition(saveCurrentBtn, saveCurrentBtn.Position)
     saveCurrentBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(saveCurrentBtn, saveCurrentBtn.Position, saveCurrentLockConn)
         local namePanel = Instance.new("Frame")
         namePanel.Parent = panel
         namePanel.Size = UDim2.new(0, 200, 0, 60)
@@ -1730,8 +1803,9 @@ function Page:CreateSavedServersPanel(config)
         local cf = Instance.new("UICorner")
         cf.CornerRadius = UDim.new(0, 4)
         cf.Parent = confirmBtn
-        LockButtonPosition(confirmBtn, confirmBtn.Position)
+        local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
         confirmBtn.MouseButton1Click:Connect(function()
+            playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
             if config.OnSave then
                 config.OnSave(game.JobId, input.Text)
                 refreshList()
@@ -1750,8 +1824,11 @@ function Page:CreateSavedServersPanel(config)
         local cl = Instance.new("UICorner")
         cl.CornerRadius = UDim.new(0, 4)
         cl.Parent = cancelBtn
-        LockButtonPosition(cancelBtn, cancelBtn.Position)
-        cancelBtn.MouseButton1Click:Connect(function() namePanel:Destroy() end)
+        local cancelLockConn = LockButtonPosition(cancelBtn, cancelBtn.Position)
+        cancelBtn.MouseButton1Click:Connect(function()
+            playButtonClickAnimation(cancelBtn, cancelBtn.Position, cancelLockConn)
+            namePanel:Destroy()
+        end)
     end)
     local closeBtn = Instance.new("TextButton")
     closeBtn.Parent = panel
@@ -1764,8 +1841,11 @@ function Page:CreateSavedServersPanel(config)
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    LockButtonPosition(closeBtn, closeBtn.Position)
-    closeBtn.MouseButton1Click:Connect(function() tweenPanelClose(panel) end)
+    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
+    closeBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        tweenPanelClose(panel)
+    end)
     panel:GetPropertyChangedSignal("Visible"):Connect(function()
         if panel.Visible then refreshList() end
     end)
@@ -1863,7 +1943,7 @@ function Page:CreateKickPanel(config)
     local kickCorner = Instance.new("UICorner")
     kickCorner.CornerRadius = UDim.new(0, 6)
     kickCorner.Parent = kickBtn
-    LockButtonPosition(kickBtn, kickBtn.Position)
+    local kickLockConn = LockButtonPosition(kickBtn, kickBtn.Position)
     local closeBtn = Instance.new("TextButton")
     closeBtn.Parent = panel
     closeBtn.Size = UDim2.new(0, 22, 0, 22)
@@ -1875,9 +1955,13 @@ function Page:CreateKickPanel(config)
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    LockButtonPosition(closeBtn, closeBtn.Position)
-    closeBtn.MouseButton1Click:Connect(function() tweenPanelClose(panel) end)
+    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
+    closeBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        tweenPanelClose(panel)
+    end)
     kickBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(kickBtn, kickBtn.Position, kickLockConn)
         local targetName = inputBox.Text
         if targetName == "" then
             if config.OnError then config.OnError("请输入玩家名称") end
@@ -1965,7 +2049,7 @@ function Page:CreateCustomPopup(config)
     local confirmCorner = Instance.new("UICorner")
     confirmCorner.CornerRadius = UDim.new(0, 6)
     confirmCorner.Parent = confirmBtn
-    LockButtonPosition(confirmBtn, confirmBtn.Position)
+    local confirmLockConn = LockButtonPosition(confirmBtn, confirmBtn.Position)
     local closeBtn = Instance.new("TextButton")
     closeBtn.Parent = panel
     closeBtn.Size = UDim2.new(0, 22, 0, 22)
@@ -1977,9 +2061,13 @@ function Page:CreateCustomPopup(config)
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
-    LockButtonPosition(closeBtn, closeBtn.Position)
-    closeBtn.MouseButton1Click:Connect(function() tweenPanelClose(panel) end)
+    local closeLockConn = LockButtonPosition(closeBtn, closeBtn.Position)
+    closeBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(closeBtn, closeBtn.Position, closeLockConn)
+        tweenPanelClose(panel)
+    end)
     confirmBtn.MouseButton1Click:Connect(function()
+        playButtonClickAnimation(confirmBtn, confirmBtn.Position, confirmLockConn)
         if config.OnConfirm then config.OnConfirm() end
         tweenPanelClose(panel)
     end)
@@ -2142,7 +2230,7 @@ function UILibrary:CreateWindow(config)
     local ToggleCorner = Instance.new("UICorner")
     ToggleCorner.CornerRadius = UDim.new(0, 8)
     ToggleCorner.Parent = ToggleBtn
-    LockButtonPosition(ToggleBtn, toggleFixedPos)
+    local toggleLockConn = LockButtonPosition(ToggleBtn, toggleFixedPos)
     local mainTargetSize = UDim2.new(0, 650, 0, 280)
     local mainTargetPos = UDim2.new(0.5, 0, 0.5, 10)
     local function getToggleCenter()
@@ -2177,16 +2265,22 @@ function UILibrary:CreateWindow(config)
         end)
     end
     ToggleBtn.MouseButton1Click:Connect(function()
+        if toggleLockConn then toggleLockConn:Disconnect() end
         local originalSize = ToggleBtn.Size
         local tweenDown = TweenService:Create(ToggleBtn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset * 0.88, originalSize.Y.Scale, originalSize.Y.Offset * 0.88)
+            Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset * 0.88, originalSize.Y.Scale, originalSize.Y.Offset * 0.88),
+            Position = UDim2.new(toggleFixedPos.X.Scale, toggleFixedPos.X.Offset, toggleFixedPos.Y.Scale, toggleFixedPos.Y.Offset - 4)
         })
         tweenDown:Play()
         tweenDown.Completed:Connect(function()
             local tweenUp = TweenService:Create(ToggleBtn, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Size = originalSize
+                Size = originalSize,
+                Position = toggleFixedPos
             })
             tweenUp:Play()
+            tweenUp.Completed:Connect(function()
+                toggleLockConn = LockButtonPosition(ToggleBtn, toggleFixedPos)
+            end)
         end)
         if Main.Visible then
             animateMainClose()
@@ -2280,22 +2374,9 @@ function UILibrary:CreateWindow(config)
         cat.AutoButtonColor = false
         cat.ZIndex = 21
         cat.Font = Enum.Font.SourceSansBold
-        LockButtonPosition(cat, cat.Position)
-        local pageScroll = Instance.new("ScrollingFrame")
-        pageScroll.Name = "Scroll_" .. name
-        pageScroll.Parent = self.ContentArea
-        pageScroll.BackgroundTransparency = 1
-        pageScroll.Size = UDim2.new(1, 0, 1, 0)
-        pageScroll.CanvasSize = UDim2.new(0, 0, 0, 200)
-        pageScroll.ScrollBarThickness = 6
-        pageScroll.BorderSizePixel = 0
-        pageScroll.ZIndex = 20
-        pageScroll.Visible = false
-        local page = Page.new(pageScroll, self.Theme)
-        page.scrollFrame = pageScroll
-        page.frame.Name = "Page" .. name
-        self.Pages[name] = page
+        local catLockConn = LockButtonPosition(cat, cat.Position)
         cat.MouseButton1Click:Connect(function()
+            playButtonClickAnimation(cat, cat.Position, catLockConn)
             if self.Selected then
                 self.Selected.BackgroundTransparency = 0.8
                 self.Selected.BackgroundColor3 = self.Theme.CatBg
@@ -2316,6 +2397,20 @@ function UILibrary:CreateWindow(config)
             page.scrollFrame.Visible = true
             page:UpdateCanvas()
         end)
+        local pageScroll = Instance.new("ScrollingFrame")
+        pageScroll.Name = "Scroll_" .. name
+        pageScroll.Parent = self.ContentArea
+        pageScroll.BackgroundTransparency = 1
+        pageScroll.Size = UDim2.new(1, 0, 1, 0)
+        pageScroll.CanvasSize = UDim2.new(0, 0, 0, 200)
+        pageScroll.ScrollBarThickness = 6
+        pageScroll.BorderSizePixel = 0
+        pageScroll.ZIndex = 20
+        pageScroll.Visible = false
+        local page = Page.new(pageScroll, self.Theme)
+        page.scrollFrame = pageScroll
+        page.frame.Name = "Page" .. name
+        self.Pages[name] = page
         table.insert(self.Categories, cat)
         return page
     end
