@@ -2204,7 +2204,7 @@ function UILibrary:CreateWindow(config)
             if beanPaused then return end
             alpha += dt
             local newY = alpha * speed - 22
-            if newY > 280 then conn:Disconnect() label:Destroy() return end
+            if newY > Main.AbsoluteSize.Y then conn:Disconnect() label:Destroy() return end
             label.Position = UDim2.new(0, x + math.sin(alpha * 1.2) * drift, 0, newY)
         end)
     end
@@ -2271,6 +2271,11 @@ function UILibrary:CreateWindow(config)
             cat.BackgroundTransparency = 0.5
             cat.BackgroundColor3 = self.Theme.CatActive
             self.Selected = cat
+            for _, child in ipairs(self.ContentArea:GetChildren()) do
+                if child:IsA("ScrollingFrame") then
+                    child.Visible = false
+                end
+            end
             for _, p in pairs(self.Pages) do
                 p.frame.Visible = false
                 p.scrollFrame.Visible = false
@@ -2280,9 +2285,13 @@ function UILibrary:CreateWindow(config)
                     child.Visible = false
                 end
             end
-            page.frame.Visible = true
-            page.scrollFrame.Visible = true
-            page:UpdateCanvas()
+            local currentPage = self.Pages[name]
+            if currentPage then
+                currentPage.frame.Visible = true
+                currentPage.scrollFrame.Visible = true
+                currentPage.scrollFrame.CanvasPosition = Vector2.new(0, 0)
+                currentPage:UpdateCanvas()
+            end
         end)
         table.insert(self.Categories, cat)
         return page
