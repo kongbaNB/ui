@@ -1,4 +1,3 @@
-loadstring(game:HttpGet("https://raw.soteria.rip/44607000ec4c3ec665d3ccaddad90962"))()
 local cloneref = (cloneref or clonereference or function(instance: any)
     return instance
 end)
